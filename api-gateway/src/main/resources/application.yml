@@ -1,0 +1,97 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          # Static routes. There is no service registry and none is needed for four services —
+          # see DESIGN.md section 2. Adding Eureka would be infrastructure for its own sake.
+          #
+          # Note what is absent: there is no route to /internal/**. That absence is load-bearing.
+          # Those endpoints move money and provision wallets, and the only thing that should be
+          # able to reach them is another service on the same network. A route here would publish
+          # them to the internet.
+          routes:
+            - id: auth-service
+              uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/api/auth/**
+
+            - id: auth-service-users
+              uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/api/users/**
+
+            # Public key set, so any client can verify a token for itself.
+            - id: auth-service-jwks
+              uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/.well-known/jwks.json
+
+            - id: wallet-service
+              uri: ${WALLET_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/wallets/**
+
+            - id: wallet-service-admin
+              uri: ${WALLET_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/admin/**
+
+            - id: transfer-service
+              uri: ${TRANSFER_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/transfers/**
+
+          httpclient:
+            connect-timeout: 2000
+            # Longer than any downstream read timeout, so a slow service is reported by the
+            # service itself rather than being cut off here with less context.
+            response-timeout: 15s
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${AUTH_JWKS_URI:http://localhost:8081/.well-known/jwks.json}
+
+security:
+  jwt:
+    expected-issuer: ${AUTH_JWT_ISSUER:https://digitalwallet.example/auth}
+
+gateway:
+  cors:
+    # No default of "*". A wildcard would let any site on the internet make authenticated calls
+    # from a user's browser. Empty means no cross-origin requests are permitted at all, which is
+    # the right default for an API whose only shipped client is Swagger UI on the same origin.
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+
+  rate-limit:
+    enabled: true
+    # In-memory, per instance. Redis is the standard answer for a shared limit across instances,
+    # but adding it contradicts the lean-infrastructure decision in DESIGN.md section 2 for a
+    # system that runs one gateway. The limitation is stated in the README rather than hidden:
+    # run two gateways and the effective limit doubles.
+    authenticated:
+      capacity: 100
+      refill-per-second: 20
+    # Tighter, and keyed by IP. This is what protects the login and registration endpoints, which
+    # is where credential stuffing actually lands.
+    anonymous:
+      capacity: 20
+      refill-per-second: 2
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.digitalwallet: INFO

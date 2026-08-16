@@ -1,0 +1,422 @@
+{
+  "info": {
+    "name": "Digital Wallet",
+    "description": "End-to-end walkthrough of the digital wallet API, through the gateway on :8080.\n\nRun the requests in order. The login request captures the tokens into collection variables, so nothing needs to be pasted by hand.\n\nThe sequence tells a story rather than just listing endpoints: register two users, fund one, send money, then send the *same request again* with the same Idempotency-Key and watch it return the original result instead of paying twice. The last request proves the ledger still balances after all of it.\n\nAmounts are always integers in minor units (paise): 100000 means 1000.00.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "refreshToken", "value": "", "type": "string" },
+    { "key": "senderEmail", "value": "alice@example.com", "type": "string" },
+    { "key": "senderHandle", "value": "alice", "type": "string" },
+    { "key": "recipientHandle", "value": "bob", "type": "string" },
+    { "key": "password", "value": "Correct-Horse-9", "type": "string" },
+    { "key": "transferKey", "value": "demo-transfer-1", "type": "string" },
+    { "key": "transferId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Identity",
+      "item": [
+        {
+          "name": "Register sender",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 409 is fine on a re-run: the user already exists from last time.",
+                  "pm.test('created or already present', () => pm.expect([201, 409]).to.include(pm.response.code));",
+                  "if (pm.response.code === 201) {",
+                  "  pm.test('a wallet was provisioned', () =>",
+                  "    pm.expect(pm.response.json()).to.have.property('walletProvisioned'));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"handle\": \"{{senderHandle}}\",\n  \"email\": \"{{senderEmail}}\",\n  \"password\": \"{{password}}\",\n  \"fullName\": \"Alice Example\"\n}"
+            },
+            "description": "Creates the account and asks wallet-service to provision a wallet.\n\nIf that downstream call fails the registration still succeeds — the wallet is created lazily on first access instead. Failing a signup because another service was restarting would be the wrong trade."
+          }
+        },
+        {
+          "name": "Register recipient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('created or already present', () => pm.expect([201, 409]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"handle\": \"{{recipientHandle}}\",\n  \"email\": \"bob@example.com\",\n  \"password\": \"{{password}}\",\n  \"fullName\": \"Bob Example\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Log in",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', body.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', body.refreshToken);",
+                  "pm.test('access token is short-lived', () =>",
+                  "  pm.expect(body.expiresIn).to.be.at.most(900));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{senderEmail}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "description": "Returns a 15-minute RS256 access token and an opaque 7-day refresh token. The tokens are captured into collection variables by the test script.\n\nA wrong password and an unknown email return the same message, so this endpoint cannot be used to find out who has an account."
+          }
+        },
+        {
+          "name": "My profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/users/me", "host": ["{{baseUrl}}"], "path": ["api", "users", "me"] },
+            "description": "Identity comes from the token's subject claim. There is no user id parameter to tamper with."
+          }
+        },
+        {
+          "name": "Look up recipient by handle",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/lookup?handle={{recipientHandle}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "lookup"],
+              "query": [{ "key": "handle", "value": "{{recipientHandle}}" }]
+            },
+            "description": "Confirms who you are about to pay. Authenticated, and returns only the handle and display name — enough to check you have the right person, and nothing that would help contact or target them elsewhere."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Wallet",
+      "item": [
+        {
+          "name": "My balance",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/wallets/me", "host": ["{{baseUrl}}"], "path": ["api", "wallets", "me"] }
+          }
+        },
+        {
+          "name": "Top up 1000.00",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 201 the first time, 200 on a replay of the same key.",
+                  "pm.test('posted or replayed', () => pm.expect([200, 201]).to.include(pm.response.code));",
+                  "pm.test('the response says which it was', () =>",
+                  "  pm.expect(pm.response.json()).to.have.property('replayed'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "demo-topup-1" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/wallets/me/topups", "host": ["{{baseUrl}}"], "path": ["api", "wallets", "me", "topups"] },
+            "body": { "mode": "raw", "raw": "{\n  \"amountMinor\": 100000\n}" },
+            "description": "A simulated deposit. Money enters the platform, so the balancing debit goes against the internal SYSTEM_FUNDING account — value never appears from nowhere.\n\nThe Idempotency-Key is required, not optional. Send this twice and the second call returns 200 with replayed=true and no second deposit."
+          }
+        },
+        {
+          "name": "Statement",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallets/me/statement?size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallets", "me", "statement"],
+              "query": [
+                { "key": "size", "value": "20" },
+                { "key": "cursor", "value": "", "disabled": true }
+              ]
+            },
+            "description": "Newest first, keyset-paginated. Pass the returned nextCursor back as ?cursor= for the following page.\n\nKeyset rather than offset paging because with OFFSET a row inserted while you are paging shifts everything down — on a bank statement that reads as a duplicated or vanished transaction."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Transfers",
+      "item": [
+        {
+          "name": "Send 50.00",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 201 the money moved; 202 the outcome is not yet known and will be reconciled.",
+                  "pm.test('accepted', () => pm.expect([201, 202]).to.include(pm.response.code));",
+                  "pm.collectionVariables.set('transferId', pm.response.json().transferId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "{{transferKey}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/transfers", "host": ["{{baseUrl}}"], "path": ["api", "transfers"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipientHandle\": \"{{recipientHandle}}\",\n  \"amountMinor\": 5000,\n  \"note\": \"Dinner\"\n}"
+            },
+            "description": "201 means the money moved. 202 means the request is recorded but wallet-service did not confirm whether it took effect — poll the transfer by id and a background sweep will settle it. Guessing in that moment is how a system either loses a payment or makes it twice."
+          }
+        },
+        {
+          "name": "Send it again — same key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('replays rather than sending again', () =>",
+                  "  pm.expect([201, 202]).to.include(pm.response.code));",
+                  "pm.test('it is the SAME transfer, not a second one', () =>",
+                  "  pm.expect(pm.response.json().transferId)",
+                  "    .to.eql(pm.collectionVariables.get('transferId')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "{{transferKey}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/transfers", "host": ["{{baseUrl}}"], "path": ["api", "transfers"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipientHandle\": \"{{recipientHandle}}\",\n  \"amountMinor\": 5000,\n  \"note\": \"Dinner\"\n}"
+            },
+            "description": "The whole point of the Idempotency-Key. A client whose request timed out has no way to know whether it worked, so the only safe thing it can do is retry — and retrying must not pay twice.\n\nThe test asserts the transfer id is identical to the first call's. Check the balance afterwards: only 50.00 left the wallet."
+          }
+        },
+        {
+          "name": "Same key, different body — 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409 Conflict', () => pm.response.to.have.status(409));",
+                  "pm.test('and it says why', () =>",
+                  "  pm.expect(pm.response.json().type).to.include('idempotency-conflict'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "{{transferKey}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/transfers", "host": ["{{baseUrl}}"], "path": ["api", "transfers"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipientHandle\": \"{{recipientHandle}}\",\n  \"amountMinor\": 9999,\n  \"note\": \"Dinner\"\n}"
+            },
+            "description": "A different amount under a key that has already been used is a client bug, and answering it with the first request's receipt would silently swallow a payment the user believes they made. So it is refused instead."
+          }
+        },
+        {
+          "name": "Transfer status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers/{{transferId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transfers", "{{transferId}}"]
+            },
+            "description": "Owner-scoped against the token. Asking for someone else's transfer returns 404, not 403 — a 403 would confirm the id is real, which is enough to map out other people's activity by probing."
+          }
+        },
+        {
+          "name": "My transfer history",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers?size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transfers"],
+              "query": [
+                { "key": "size", "value": "20" },
+                { "key": "cursor", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Insufficient funds — 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422, not 400 — the request was fine, the balance was not', () =>",
+                  "  pm.response.to.have.status(422));",
+                  "pm.test('RFC 7807 body', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.type).to.include('insufficient-funds');",
+                  "  pm.expect(body).to.have.property('title');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "demo-too-much-1" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/transfers", "host": ["{{baseUrl}}"], "path": ["api", "transfers"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipientHandle\": \"{{recipientHandle}}\",\n  \"amountMinor\": 9900000,\n  \"note\": \"More than the wallet holds\"\n}"
+            },
+            "description": "422 rather than 400: the request was well-formed, it just cannot be satisfied given the current balance. The transfer is recorded as FAILED, and retrying with this same key replays the failure rather than trying again."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Proving the ledger",
+      "item": [
+        {
+          "name": "Reconciliation (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Needs a ROLE_ADMIN token; an ordinary user gets 403, which is itself the point.",
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  pm.test('every cached balance matches its ledger lines', () =>",
+                  "    pm.expect(body.consistent).to.be.true);",
+                  "  pm.test('money was moved, never created or destroyed', () =>",
+                  "    pm.expect(body.ledgerSumMinor).to.eql(0));",
+                  "} else {",
+                  "  pm.test('an ordinary user is refused', () => pm.response.to.have.status(403));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/reconciliation", "host": ["{{baseUrl}}"], "path": ["api", "admin", "reconciliation"] },
+            "description": "The end-to-end proof, run live against whatever state the system is in.\n\nTwo independent claims: that every cached balance still equals the sum of its own ledger lines, and that the signed total of every line in the system is zero. The first says the cache has not drifted; the second says no posting has ever created or destroyed value.\n\nRequires ROLE_ADMIN. With an ordinary user's token this returns 403 — which is worth seeing too."
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Session lifecycle",
+      "item": [
+        {
+          "name": "Refresh the token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('the refresh token was rotated', () =>",
+                  "  pm.expect(body.refreshToken).to.not.eql(pm.collectionVariables.get('refreshToken')));",
+                  "pm.collectionVariables.set('accessToken', body.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', body.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/refresh", "host": ["{{baseUrl}}"], "path": ["api", "auth", "refresh"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" },
+            "description": "Every refresh issues a new token and revokes the old one. Public rather than authenticated, deliberately: the whole point of refreshing is that the access token has expired, so requiring a valid one would make the endpoint unusable exactly when it is needed.\n\nRun this twice without re-logging in and the second call fails — presenting an already-used refresh token indicates theft, so the entire chain is revoked."
+          }
+        },
+        {
+          "name": "Log out",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/logout", "host": ["{{baseUrl}}"], "path": ["api", "auth", "logout"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" },
+            "description": "Returns 204 whether or not the token existed — confirming which tokens are real would let a caller probe them."
+          }
+        }
+      ]
+    }
+  ]
+}

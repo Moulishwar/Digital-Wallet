@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Suppressions for the OWASP dependency-check scan.
+
+  Empty on purpose. Every entry added here must carry a reason and a date, because a suppression is
+  a decision to ship a known vulnerability — that decision should be readable by whoever inherits
+  it, not silently inherited as a fact of the build.
+
+  The shape to follow:
+
+    <suppress until="2026-12-31Z">
+      <notes>
+        CVE-2000-0000 is reported against transitive-lib 1.2.3, in the XML parsing path. This
+        project never parses XML from an untrusted source, so it is not reachable. Reviewed
+        2026-08-16; drop this entry once transitive-lib 1.3.0 is released.
+      </notes>
+      <packageUrl regex="true">^pkg:maven/com\.example/transitive-lib@.*$</packageUrl>
+      <cve>CVE-2000-0000</cve>
+    </suppress>
+
+  Prefer an `until` date on anything that is waiting for an upstream fix, so it expires rather than
+  quietly becoming permanent.
+-->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+</suppressions>

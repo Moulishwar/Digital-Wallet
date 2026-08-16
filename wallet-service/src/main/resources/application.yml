@@ -1,0 +1,72 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: wallet-service
+
+  # No defaults for credentials. A missing variable must fail startup loudly rather than
+  # silently fall back to something insecure — see DESIGN.md section 9.5.
+  datasource:
+    url: ${WALLET_DB_URL}
+    username: ${WALLET_DB_USER}
+    password: ${WALLET_DB_PASSWORD}
+    hikari:
+      pool-name: wallet-pool
+      maximum-pool-size: 10
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Flyway owns the schema. validate fails startup if the entities and migrations disagree,
+      # which turns a silent production drift into a build-time error.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+          batch_size: 20
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Public keys only, fetched from auth-service and cached. Verification then happens
+          # locally on every request, so auth-service being down does not stop this service from
+          # honouring tokens it already issued.
+          jwk-set-uri: ${AUTH_JWKS_URI:http://localhost:8081/.well-known/jwks.json}
+
+security:
+  jwt:
+    # Tokens are only accepted from this issuer. Without the check, a token signed by any key the
+    # JWKS happens to serve would be accepted regardless of who minted it.
+    expected-issuer: ${AUTH_JWT_ISSUER:https://digitalwallet.example/auth}
+
+  # Required on /internal/**. No default: a missing value fails startup rather than leaving the
+  # endpoints that move money guarded by nothing but network position (DESIGN.md sections 9.4, 9.5).
+  service-credential: ${SERVICE_CREDENTIAL}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+  api-docs:
+    path: /v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    com.digitalwallet: INFO

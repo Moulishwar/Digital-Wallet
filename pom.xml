@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.5.3</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>com.digitalwallet</groupId>
+  <artifactId>digital-wallet</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>digital-wallet</name>
+  <description>Peer-to-peer digital wallet built on a double-entry ledger</description>
+
+  <modules>
+    <module>platform-common</module>
+    <module>api-gateway</module>
+    <module>auth-service</module>
+    <module>wallet-service</module>
+    <module>transfer-service</module>
+  </modules>
+
+  <properties>
+    <java.version>21</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <spring-cloud.version>2025.0.0</spring-cloud.version>
+    <!-- Testcontainers, Flyway and the Postgres driver are version-managed by
+         spring-boot-dependencies; do not pin them here or they will drift behind Boot. -->
+    <springdoc.version>2.8.9</springdoc.version>
+    <dependency-check.version>12.1.0</dependency-check.version>
+
+    <!-- Container image naming. The Spring Boot plugin would otherwise produce
+         "wallet-service:0.1.0-SNAPSHOT", which docker-compose.yml and the CI publish step would
+         both have to guess at. Overridden in CI to publish to GHCR under the repository owner. -->
+    <image.registry>digital-wallet</image.registry>
+    <image.tag>latest</image.tag>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        <version>${springdoc.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.digitalwallet</groupId>
+        <artifactId>platform-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <!-- Every JVM in this build runs in UTC.
+
+             The PostgreSQL JDBC driver sends the JVM's default zone as the connection's TimeZone
+             parameter. On Windows that resolves to the legacy alias "Asia/Calcutta", which
+             PostgreSQL 16 rejects outright, so the connection fails before a single query runs.
+             Pinning UTC removes the machine dependency, and it is the right default for a ledger
+             regardless: timestamps are TIMESTAMPTZ and Hibernate is already told to write UTC. -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <argLine>-Duser.timezone=UTC</argLine>
+          </configuration>
+        </plugin>
+
+        <!-- Images are built by Cloud Native Buildpacks, so there is no Dockerfile in this
+             repository to drift out of step with the build. -->
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <configuration>
+            <image>
+              <name>${image.registry}/${project.artifactId}:${image.tag}</name>
+            </image>
+          </configuration>
+        </plugin>
+
+        <!-- Integration tests (*IT.java) run in the verify phase, separate from unit tests. -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <configuration>
+            <argLine>-Duser.timezone=UTC</argLine>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <profiles>
+    <!-- Dependency vulnerability scanning.
+         Kept in a profile because it downloads and caches the NVD database, which takes minutes on
+         a cold run — long enough that having it on every local build would train people to skip
+         the build. CI runs it on a schedule and on pull requests, where that cost is paid once.
+
+         Run locally with:  ./mvnw -Psecurity-scan verify  (set NVD_API_KEY first, or expect it to
+         be slow — the API is heavily rate-limited for anonymous callers). -->
+    <profile>
+      <id>security-scan</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-maven</artifactId>
+            <version>${dependency-check.version}</version>
+            <configuration>
+              <!-- Fail on High and Critical. Failing on everything would mean a build that is red
+                   most of the time, which is a build nobody reads. -->
+              <failBuildOnCVSS>7</failBuildOnCVSS>
+              <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
+              <formats>
+                <format>HTML</format>
+                <format>SARIF</format>
+              </formats>
+              <!-- Test-only dependencies do not ship, so a CVE in one is not a shipped
+                   vulnerability. Scanning them would produce findings nobody can act on. -->
+              <skipTestScope>true</skipTestScope>
+              <suppressionFiles>
+                <suppressionFile>${maven.multiModuleProjectDirectory}/.owasp-suppressions.xml</suppressionFile>
+              </suppressionFiles>
+            </configuration>
+            <executions>
+              <execution>
+                <phase>verify</phase>
+                <goals>
+                  <goal>aggregate</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+</project>

@@ -1,0 +1,67 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service
+
+  datasource:
+    url: ${AUTH_DB_URL}
+    username: ${AUTH_DB_USER}
+    password: ${AUTH_DB_PASSWORD}
+    hikari:
+      pool-name: auth-pool
+      maximum-pool-size: 10
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+security:
+  jwt:
+    issuer: https://digitalwallet.example/auth
+    access-token-ttl: 15m
+    # Long enough to be convenient, short enough that a stolen token expires. Rotation means a
+    # token is only valid until its next use anyway.
+    refresh-token-ttl: 7d
+    key-id: wallet-signing-key
+    # PEM-encoded RSA keypair, supplied by the environment. No default: a signing key baked into
+    # a config file is a signing key in version control (DESIGN.md section 9.5).
+    private-key: ${JWT_PRIVATE_KEY:}
+    public-key: ${JWT_PUBLIC_KEY:}
+    # Escape hatch for tests only. When true and no keypair is configured, an ephemeral one is
+    # generated at startup. Tokens then die with the process, which is fine for a test and
+    # useless in production — hence it must be switched on deliberately.
+    allow-ephemeral-keys: false
+
+  # Presented to wallet-service on /internal/** calls. No default (DESIGN.md section 9.5).
+  service-credential: ${SERVICE_CREDENTIAL}
+
+wallet:
+  base-url: ${WALLET_SERVICE_URL:http://localhost:8082}
+  # Registration must not hang because a downstream service is slow.
+  connect-timeout: 2s
+  read-timeout: 3s
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.digitalwallet: INFO

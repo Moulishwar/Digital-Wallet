@@ -1,0 +1,17 @@
+# Build output
+target/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Private working documents — not part of the published project
+Full.md
+JD.md
+DESIGN.md
+
+# Local helper scripts — kept out of the published project
+scripts/
+
+# Real secrets. .env.example is committed and holds only placeholders; .env is not.
+.env

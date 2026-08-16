@@ -1,0 +1,172 @@
+# Local development stack.
+#
+# Each service gets its own PostgreSQL instance — not separate schemas in one server. Sharing a
+# server would make it trivially easy to write a cross-service join, which is exactly the coupling
+# the service boundaries exist to prevent. See DESIGN.md section 4.
+#
+# Two ways to run it:
+#
+#   docker compose up -d
+#       Databases only. Run the services yourself from an IDE or with `./mvnw spring-boot:run` —
+#       the everyday development loop, where you want a debugger attached.
+#
+#   ./mvnw -DskipTests spring-boot:build-image
+#   docker compose --profile services up -d
+#       The whole system, services included, reachable at http://localhost:8080. Images are built
+#       by Cloud Native Buildpacks via the Spring Boot plugin, so there is no Dockerfile to keep in
+#       step with the build. Set IMAGE_REGISTRY and IMAGE_TAG to run published images instead.
+#
+#   copy .env.example to .env and fill it in first — several values have no default on purpose.
+
+services:
+
+  walletdb:
+    image: postgres:16
+    container_name: dw-walletdb
+    environment:
+      POSTGRES_DB: ${WALLET_DB_NAME:-walletdb}
+      POSTGRES_USER: ${WALLET_DB_USER:-wallet}
+      # No default. Compose refuses to start if this is unset, rather than booting with a
+      # guessable password — the same rule the services apply to their own config.
+      POSTGRES_PASSWORD: ${WALLET_DB_PASSWORD:?WALLET_DB_PASSWORD must be set in .env}
+    ports:
+      - "${WALLET_DB_PORT:-5433}:5432"
+    volumes:
+      - walletdb-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${WALLET_DB_USER:-wallet} -d ${WALLET_DB_NAME:-walletdb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  authdb:
+    image: postgres:16
+    container_name: dw-authdb
+    environment:
+      POSTGRES_DB: ${AUTH_DB_NAME:-authdb}
+      POSTGRES_USER: ${AUTH_DB_USER:-auth}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD:?AUTH_DB_PASSWORD must be set in .env}
+    ports:
+      - "${AUTH_DB_PORT:-5434}:5432"
+    volumes:
+      - authdb-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${AUTH_DB_USER:-auth} -d ${AUTH_DB_NAME:-authdb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  transferdb:
+    image: postgres:16
+    container_name: dw-transferdb
+    environment:
+      POSTGRES_DB: ${TRANSFER_DB_NAME:-transferdb}
+      POSTGRES_USER: ${TRANSFER_DB_USER:-transfer}
+      POSTGRES_PASSWORD: ${TRANSFER_DB_PASSWORD:?TRANSFER_DB_PASSWORD must be set in .env}
+    ports:
+      - "${TRANSFER_DB_PORT:-5435}:5432"
+    volumes:
+      - transferdb-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TRANSFER_DB_USER:-transfer} -d ${TRANSFER_DB_NAME:-transferdb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ---------------------------------------------------------------- services
+  #
+  # Only started with `--profile services`. Each waits for its own database to report healthy,
+  # because Flyway runs at startup and a service that races its database just crashes.
+  #
+  # Note that the services address each other by container name on the compose network, and that
+  # only the gateway publishes a port. The three services behind it are reachable from each other
+  # and from nowhere else, which is what makes /internal/** genuinely internal.
+
+  auth-service:
+    image: ${IMAGE_REGISTRY:-digital-wallet}/auth-service:${IMAGE_TAG:-latest}
+    container_name: dw-auth-service
+    profiles: [services]
+    depends_on:
+      authdb:
+        condition: service_healthy
+    environment:
+      AUTH_DB_URL: jdbc:postgresql://authdb:5432/${AUTH_DB_NAME:-authdb}
+      AUTH_DB_USER: ${AUTH_DB_USER:-auth}
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD:?AUTH_DB_PASSWORD must be set in .env}
+      WALLET_SERVICE_URL: http://wallet-service:8082
+      SERVICE_CREDENTIAL: ${SERVICE_CREDENTIAL:?SERVICE_CREDENTIAL must be set in .env}
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:?JWT_PRIVATE_KEY must be set in .env}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:?JWT_PUBLIC_KEY must be set in .env}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8081/actuator/health | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  wallet-service:
+    image: ${IMAGE_REGISTRY:-digital-wallet}/wallet-service:${IMAGE_TAG:-latest}
+    container_name: dw-wallet-service
+    profiles: [services]
+    depends_on:
+      walletdb:
+        condition: service_healthy
+    environment:
+      WALLET_DB_URL: jdbc:postgresql://walletdb:5432/${WALLET_DB_NAME:-walletdb}
+      WALLET_DB_USER: ${WALLET_DB_USER:-wallet}
+      WALLET_DB_PASSWORD: ${WALLET_DB_PASSWORD:?WALLET_DB_PASSWORD must be set in .env}
+      AUTH_JWKS_URI: http://auth-service:8081/.well-known/jwks.json
+      SERVICE_CREDENTIAL: ${SERVICE_CREDENTIAL:?SERVICE_CREDENTIAL must be set in .env}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8082/actuator/health | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  transfer-service:
+    image: ${IMAGE_REGISTRY:-digital-wallet}/transfer-service:${IMAGE_TAG:-latest}
+    container_name: dw-transfer-service
+    profiles: [services]
+    depends_on:
+      transferdb:
+        condition: service_healthy
+    environment:
+      TRANSFER_DB_URL: jdbc:postgresql://transferdb:5432/${TRANSFER_DB_NAME:-transferdb}
+      TRANSFER_DB_USER: ${TRANSFER_DB_USER:-transfer}
+      TRANSFER_DB_PASSWORD: ${TRANSFER_DB_PASSWORD:?TRANSFER_DB_PASSWORD must be set in .env}
+      WALLET_SERVICE_URL: http://wallet-service:8082
+      AUTH_SERVICE_URL: http://auth-service:8081
+      AUTH_JWKS_URI: http://auth-service:8081/.well-known/jwks.json
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8083/actuator/health | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  api-gateway:
+    image: ${IMAGE_REGISTRY:-digital-wallet}/api-gateway:${IMAGE_TAG:-latest}
+    container_name: dw-api-gateway
+    profiles: [services]
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      wallet-service:
+        condition: service_healthy
+      transfer-service:
+        condition: service_healthy
+    # The only port published to the host. Everything else is reachable only from inside.
+    ports:
+      - "8080:8080"
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:8081
+      WALLET_SERVICE_URL: http://wallet-service:8082
+      TRANSFER_SERVICE_URL: http://transfer-service:8083
+      AUTH_JWKS_URI: http://auth-service:8081/.well-known/jwks.json
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
+
+volumes:
+  walletdb-data:
+  authdb-data:
+  transferdb-data:
