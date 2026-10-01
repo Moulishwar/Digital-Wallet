@@ -279,6 +279,6 @@ little.
 
 ## Stack
 
-Java 21 · Spring Boot 3.5 · Spring Cloud Gateway · Spring Security 6 (OAuth2 Resource Server) ·
-Spring Data JPA / Hibernate 6 · PostgreSQL 16 · Flyway · springdoc-openapi · JUnit 5 · Testcontainers ·
+Java 21 · Spring Boot 4.0 · Spring Cloud Gateway · Spring Security 7 (OAuth2 Resource Server) ·
+Spring Data JPA / Hibernate 7 · PostgreSQL 16 · Flyway · springdoc-openapi · JUnit 5 · Testcontainers ·
 WireMock · Maven (multi-module) · Docker Compose · GitHub Actions

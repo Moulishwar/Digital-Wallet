@@ -3,7 +3,7 @@ package com.digitalwallet.wallet.config;
 import com.digitalwallet.common.security.ProblemDetailAuthEntryPoints;
 import com.digitalwallet.common.security.ServiceCredential;
 import com.digitalwallet.common.security.ServiceCredentialFilter;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

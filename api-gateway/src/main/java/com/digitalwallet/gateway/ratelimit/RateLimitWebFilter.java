@@ -1,7 +1,7 @@
 package com.digitalwallet.gateway.ratelimit;
 
 import com.digitalwallet.gateway.error.GatewayProblem;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.Map;
