@@ -18,7 +18,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -38,8 +38,8 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 @SpringBootTest
 public abstract class AbstractTransferIntegrationTest {
 
-    static final PostgreSQLContainer<?> POSTGRES =
-            new PostgreSQLContainer<>(DockerImageName.parse("postgres:16"));
+    static final PostgreSQLContainer POSTGRES =
+            new PostgreSQLContainer(DockerImageName.parse("postgres:16"));
 
     protected static final WireMockServer WIREMOCK =
             new WireMockServer(WireMockConfiguration.options().dynamicPort());

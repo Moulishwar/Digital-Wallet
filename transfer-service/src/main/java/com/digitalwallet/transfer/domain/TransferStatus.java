@@ -10,7 +10,7 @@ import java.util.Set;
  * wallet-service can fail in a way that does not say whether the money moved — a timeout, a dropped
  * connection, a 502 from something in between. Guessing in that moment is how you either lose a
  * payment or make it twice, so the transfer records that the answer is not yet known and the
- * reconciliation sweep goes and finds out (DESIGN.md section 7.4).
+ * reconciliation sweep goes and finds out.
  */
 public enum TransferStatus {
 

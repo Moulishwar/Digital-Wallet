@@ -16,7 +16,7 @@ import java.util.UUID;
  * <p>This entity holds no balance and performs no arithmetic on money. It records intent and
  * outcome; wallet-service owns the value itself. Its own id doubles as the posting's
  * {@code externalRef}, which is unique over there — that single fact is what makes retrying a
- * posting safe (DESIGN.md section 7.4).
+ * posting safe.
  *
  * <p>Status changes go through {@link #complete()}, {@link #fail(FailureReason)} and
  * {@link #markUnresolved()} rather than a setter, so every transition is checked against

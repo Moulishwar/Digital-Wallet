@@ -6,7 +6,7 @@ spring:
     name: wallet-service
 
   # No defaults for credentials. A missing variable must fail startup loudly rather than
-  # silently fall back to something insecure — see DESIGN.md section 9.5.
+  # silently fall back to something insecure.
   datasource:
     url: ${WALLET_DB_URL}
     username: ${WALLET_DB_USER}
@@ -48,7 +48,7 @@ security:
     expected-issuer: ${AUTH_JWT_ISSUER:https://digitalwallet.example/auth}
 
   # Required on /internal/**. No default: a missing value fails startup rather than leaving the
-  # endpoints that move money guarded by nothing but network position (DESIGN.md sections 9.4, 9.5).
+  # endpoints that move money guarded by nothing but network position.
   service-credential: ${SERVICE_CREDENTIAL}
 
 springdoc:

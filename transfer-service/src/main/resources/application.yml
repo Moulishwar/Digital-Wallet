@@ -6,7 +6,7 @@ spring:
     name: transfer-service
 
   # No defaults for credentials. A missing variable must fail startup loudly rather than
-  # silently fall back to something insecure — see DESIGN.md section 9.5.
+  # silently fall back to something insecure.
   datasource:
     url: ${TRANSFER_DB_URL}
     username: ${TRANSFER_DB_USER}
@@ -47,7 +47,7 @@ security:
     # JWKS happens to serve would be accepted regardless of who minted it.
     expected-issuer: ${AUTH_JWT_ISSUER:https://digitalwallet.example/auth}
 
-  # Presented to wallet-service on /internal/** calls. No default (DESIGN.md section 9.5).
+  # Presented to wallet-service on /internal/** calls. No default.
   service-credential: ${SERVICE_CREDENTIAL}
 
 wallet:
@@ -64,8 +64,8 @@ auth:
   read-timeout: 3s
 
 transfers:
-  # Ceiling on a single transfer. Not a regulatory limit — a blast radius. See DESIGN.md section 14
-  # for the per-day and velocity limits that would come with it in v2.
+  # Ceiling on a single transfer. Not a regulatory limit — a blast radius. Per-day and velocity
+  # limits would come with it in v2.
   max-amount-minor: 10000000
   reconciliation:
     # How often the sweep looks for transfers whose outcome is still unknown, and how long a

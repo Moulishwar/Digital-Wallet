@@ -65,8 +65,12 @@ jobs:
 
       # The NVD database is large and its API rate-limits anonymous callers hard. Caching it keeps
       # the scan to seconds on all but the first run.
-      - name: Cache the NVD database
-        uses: actions/cache@v6
+      #
+      # Restore and save are split rather than using actions/cache, which only saves when the job
+      # succeeds. This scan fails precisely when it finds something, and a failing scan that threw
+      # away a two-hour download would pay that cost again on every run until the build went green.
+      - name: Restore the NVD database
+        uses: actions/cache/restore@v6
         with:
           path: ~/.m2/repository/org/owasp/dependency-check-data
           key: nvd-${{ runner.os }}-${{ github.run_id }}
@@ -77,6 +81,13 @@ jobs:
           # Optional. Without it the scan still runs, just far more slowly.
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: ./mvnw -B -Psecurity-scan verify -DskipTests
+
+      - name: Save the NVD database
+        if: always()
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          key: nvd-${{ runner.os }}-${{ github.run_id }}
 
       - name: Upload the report
         if: always()

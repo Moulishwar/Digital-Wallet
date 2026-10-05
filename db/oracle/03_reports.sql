@@ -7,7 +7,7 @@
 --
 --  A note on what is absent: there are no names here, only owner_user_id. Names live in
 --  auth-service's database, and nothing in this system can join across that boundary — no shared
---  tables, no cross-database queries (DESIGN.md section 4). That constraint is the architecture
+--  tables, no cross-database queries. That constraint is the architecture
 --  showing through into the reporting layer, not an oversight. A real reporting stack would
 --  resolve those ids through the API or a warehouse that both services feed.
 -- =============================================================================================

@@ -35,7 +35,7 @@ security:
     refresh-token-ttl: 7d
     key-id: wallet-signing-key
     # PEM-encoded RSA keypair, supplied by the environment. No default: a signing key baked into
-    # a config file is a signing key in version control (DESIGN.md section 9.5).
+    # a config file is a signing key in version control.
     private-key: ${JWT_PRIVATE_KEY:}
     public-key: ${JWT_PUBLIC_KEY:}
     # Escape hatch for tests only. When true and no keypair is configured, an ephemeral one is
@@ -43,7 +43,7 @@ security:
     # useless in production — hence it must be switched on deliberately.
     allow-ephemeral-keys: false
 
-  # Presented to wallet-service on /internal/** calls. No default (DESIGN.md section 9.5).
+  # Presented to wallet-service on /internal/** calls. No default.
   service-credential: ${SERVICE_CREDENTIAL}
 
 wallet:

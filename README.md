@@ -1,6 +1,6 @@
 # Digital Wallet
 
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+[![CI](https://github.com/Moulishwar/Digital-Wallet/actions/workflows/ci.yml/badge.svg)](https://github.com/Moulishwar/Digital-Wallet/actions/workflows/ci.yml)
 
 A peer-to-peer digital wallet built as four independent Spring Boot services on a **double-entry
 ledger**. Users register, top up, send money to each other by handle, and pull a paginated statement
@@ -9,8 +9,6 @@ of everything that has ever happened to their money.
 The point of the project is not the feature list — it is how the money is modelled. **Balances are
 never edited in place.** Every movement of value writes a balanced pair of ledger rows, the way real
 financial systems do, and every balance in the system is provably derivable from that history.
-
-> Replace `OWNER/REPO` in the badge above with your GitHub path once the repository is pushed.
 
 ---
 
@@ -275,10 +273,25 @@ little.
 - **Reconciliation** — every cached balance equals the sum of its own ledger lines.
 - **Idempotency** — one key, twenty concurrent requests, one transfer, twenty identical responses.
 
---- 
+---
+
+## The ledger in Oracle
+
+[`db/oracle/`](db/oracle/) holds the wallet-service ledger model rewritten in Oracle SQL. The
+services do not use it. They run only on PostgreSQL. It exists so the data model can be read and
+queried in Oracle as well. Run the scripts in order:
+
+| Script | Contents |
+|---|---|
+| `01_schema.sql` | The ledger tables, rewritten for Oracle. The header explains each type change: `UUID` → `RAW(16)`, `BIGINT` → `NUMBER(19)`, and a partial index → a function-based unique index. |
+| `02_seed.sql` | Fixed sample data with no randomness: 20 users, one wallet each, and 300 transfers spread over about seven months. |
+| `03_reports.sql` | Six analytical queries, each with its expected result for that seed data: monthly volume with a running total, running balances rebuilt from the lines, top senders and recipients, reconciliation, the zero-sum audit, and a daily rollup kept up to date with `MERGE`. |
+
+---
 
 ## Stack
 
-Java 21 · Spring Boot 3.5 · Spring Cloud Gateway · Spring Security 6 (OAuth2 Resource Server) ·
-Spring Data JPA / Hibernate 6 · PostgreSQL 16 · Flyway · springdoc-openapi · JUnit 5 · Testcontainers ·
-WireMock · Maven (multi-module) · Docker Compose · GitHub Actions
+Java 21 · Spring Boot 4.0 · Spring Cloud Gateway · Spring Security 7 (OAuth2 Resource Server) ·
+Spring Data JPA / Hibernate 7 · PostgreSQL 16 · Flyway · springdoc-openapi · JUnit 5 · Testcontainers ·
+WireMock · Maven (multi-module) · Docker Compose · GitHub Actions · Oracle SQL (reference schema
+and reports)

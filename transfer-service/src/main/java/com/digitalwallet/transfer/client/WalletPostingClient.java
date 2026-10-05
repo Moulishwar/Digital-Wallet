@@ -3,7 +3,7 @@ package com.digitalwallet.transfer.client;
 import com.digitalwallet.common.security.ServiceCredential;
 import com.digitalwallet.transfer.domain.FailureReason;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;

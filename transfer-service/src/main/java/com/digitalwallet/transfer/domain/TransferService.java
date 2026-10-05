@@ -15,8 +15,8 @@ import com.digitalwallet.transfer.idempotency.IdempotencyService;
 import com.digitalwallet.transfer.idempotency.IdempotencyService.Claim;
 import com.digitalwallet.transfer.idempotency.RequestHash;
 import com.digitalwallet.transfer.security.CurrentUserProvider;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -265,7 +265,7 @@ public class TransferService {
     private String serialize(Object body) {
         try {
             return objectMapper.writeValueAsString(body);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException("Could not serialize a transfer response", e);
         }
     }

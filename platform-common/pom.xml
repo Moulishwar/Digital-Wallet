@@ -13,7 +13,7 @@
   <artifactId>platform-common</artifactId>
   <name>platform-common</name>
   <description>Cross-cutting concerns only: money value type, error plumbing, security config.
-               No domain classes, no DTOs, no entities — see DESIGN.md section 11.</description>
+               No domain classes, no DTOs, no entities.</description>
 
   <dependencies>
     <dependency>
@@ -25,7 +25,7 @@
          platform-common from forcing a servlet stack onto any future reactive consumer. -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
+      <artifactId>spring-boot-starter-webmvc</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -40,7 +40,7 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+      <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
       <scope>provided</scope>
     </dependency>
 

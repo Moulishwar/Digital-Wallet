@@ -1,7 +1,7 @@
 package com.digitalwallet.gateway.ratelimit;
 
 import com.digitalwallet.gateway.error.GatewayProblem;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.Map;
@@ -34,7 +34,7 @@ import reactor.core.publisher.Mono;
  *
  * <p><b>Known limitation, stated rather than hidden:</b> the buckets are in this JVM's memory. Run
  * two gateways and a client gets both allowances. Redis is the standard fix and is deliberately not
- * used here (DESIGN.md section 2 rules out adding it for a system this size); the honest position is
+ * used here (extra infrastructure is not worth it for a system this size); the honest position is
  * that this is a per-instance limit, and it is documented as one in the README.
  *
  * <p>Ordered after Spring Security's filter chain so the caller has already been authenticated and
