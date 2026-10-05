@@ -46,6 +46,14 @@
     <jackson-bom.version>3.1.7</jackson-bom.version>
     <jackson-2-bom.version>2.21.7</jackson-2-bom.version>
 
+    <!-- springdoc 3.0.3 bundles the swagger-ui 5.32.2 webjar, whose embedded DOMPurify 3.3.2 fails
+         the scan (CVE-2026-65898 and others). 5.32.15 embeds DOMPurify 3.4.13. springdoc builds
+         the webjar path from a version baked into its own jar, so each service's application.yml
+         passes this property through as springdoc.swagger-ui.version; otherwise the UI 404s.
+         Remove this, its dependencyManagement entry and those yml lines once springdoc ships
+         5.32.15 or newer. Added 2026-10-06. -->
+    <swagger-ui.version>5.32.15</swagger-ui.version>
+
     <!-- Container image naming. The Spring Boot plugin would otherwise produce
          "wallet-service:0.1.0-SNAPSHOT", which docker-compose.yml and the CI publish step would
          both have to guess at. Overridden in CI to publish to GHCR under the repository owner. -->
@@ -66,6 +74,11 @@
         <groupId>org.springdoc</groupId>
         <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         <version>${springdoc.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>swagger-ui</artifactId>
+        <version>${swagger-ui.version}</version>
       </dependency>
       <dependency>
         <groupId>com.digitalwallet</groupId>
