@@ -3,8 +3,8 @@ package com.digitalwallet.common.security;
 /**
  * The shared secret one service presents to another, and the header it travels in.
  *
- * <p>Deliberately simple. mTLS is the correct production answer and is listed as a future extension
- * in DESIGN.md section 14, rather than being half-implemented here and described as if it were the
+ * <p>Deliberately simple. mTLS is the correct production answer and is a planned future extension,
+ * rather than being half-implemented here and described as if it were the
  * real thing. What this does buy is that reaching the network is no longer, by itself, enough to
  * move money — which is the gap that matters most.
  */

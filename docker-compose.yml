@@ -2,7 +2,7 @@
 #
 # Each service gets its own PostgreSQL instance — not separate schemas in one server. Sharing a
 # server would make it trivially easy to write a cross-service join, which is exactly the coupling
-# the service boundaries exist to prevent. See DESIGN.md section 4.
+# the service boundaries exist to prevent.
 #
 # Two ways to run it:
 #

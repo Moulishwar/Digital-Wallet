@@ -9,8 +9,8 @@ spring:
     gateway:
       server:
         webflux:
-          # Static routes. There is no service registry and none is needed for four services —
-          # see DESIGN.md section 2. Adding Eureka would be infrastructure for its own sake.
+          # Static routes. There is no service registry and none is needed for four services.
+          # Adding Eureka would be infrastructure for its own sake.
           #
           # Note what is absent: there is no route to /internal/**. That absence is load-bearing.
           # Those endpoints move money and provision wallets, and the only thing that should be
@@ -74,7 +74,7 @@ gateway:
   rate-limit:
     enabled: true
     # In-memory, per instance. Redis is the standard answer for a shared limit across instances,
-    # but adding it contradicts the lean-infrastructure decision in DESIGN.md section 2 for a
+    # but adding it contradicts the lean-infrastructure decision for a
     # system that runs one gateway. The limitation is stated in the README rather than hidden:
     # run two gateways and the effective limit doubles.
     authenticated:

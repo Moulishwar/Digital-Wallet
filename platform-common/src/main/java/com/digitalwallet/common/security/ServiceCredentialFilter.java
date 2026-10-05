@@ -33,7 +33,7 @@ public class ServiceCredentialFilter extends OncePerRequestFilter {
         if (expectedCredential == null || expectedCredential.isBlank()) {
             // Never fall back to "allow everything" or to a default value. A missing credential is
             // a misconfiguration, and it must stop the service starting rather than quietly
-            // leaving the money-moving endpoints open (DESIGN.md section 9.5).
+            // leaving the money-moving endpoints open.
             throw new IllegalStateException(
                     "No service credential is configured. Set SERVICE_CREDENTIAL.");
         }
