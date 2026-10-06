@@ -91,9 +91,13 @@ openssl rand -base64 32     # -> SERVICE_CREDENTIAL
 ### The whole system
 
 ```bash
-./mvnw -DskipTests spring-boot:build-image
+./mvnw -DskipTests install -pl platform-common -am
+./mvnw -DskipTests spring-boot:build-image -pl auth-service,wallet-service,transfer-service,api-gateway
 docker compose --profile services up -d
 ```
+
+The first line installs the shared library the services depend on. The image build names the four
+services because `platform-common` is a library, not an application, so it gets no image.
 
 Everything is then behind `http://localhost:8080`. Only the gateway publishes a port; the three
 services are reachable from each other and from nowhere else, which is what makes `/internal/**`

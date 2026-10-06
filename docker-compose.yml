@@ -10,7 +10,8 @@
 #       Databases only. Run the services yourself from an IDE or with `./mvnw spring-boot:run` —
 #       the everyday development loop, where you want a debugger attached.
 #
-#   ./mvnw -DskipTests spring-boot:build-image
+#   ./mvnw -DskipTests install -pl platform-common -am
+#   ./mvnw -DskipTests spring-boot:build-image -pl auth-service,wallet-service,transfer-service,api-gateway
 #   docker compose --profile services up -d
 #       The whole system, services included, reachable at http://localhost:8080. Images are built
 #       by Cloud Native Buildpacks via the Spring Boot plugin, so there is no Dockerfile to keep in

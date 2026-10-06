@@ -138,6 +138,12 @@ jobs:
           SHA_TAG=$(git rev-parse --short HEAD)
           REGISTRY="ghcr.io/${OWNER}"
 
+          # The services depend on platform-common, which -pl leaves out of the reactor, and this
+          # runner's Maven repository is empty. Install it (and the parent pom) first. Not -am on
+          # the build below: that would run build-image on platform-common too, which is a library
+          # with no main class.
+          ./mvnw -B -DskipTests install -pl platform-common -am
+
           # Built once, locally, tagged with the commit SHA. Tagging `latest` is then a rename of
           # the same bytes rather than a second build — which is both faster and stronger: the two
           # tags are guaranteed to be the identical image, not two builds that ought to match.
