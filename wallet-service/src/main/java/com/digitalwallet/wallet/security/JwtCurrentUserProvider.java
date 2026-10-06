@@ -11,14 +11,10 @@ import org.springframework.stereotype.Component;
 /**
  * Resolves the caller from the verified JWT.
  *
- * <p>This replaces the M1 {@code X-User-Id} header placeholder. The seam held: no controller or
- * service changed, because they all depend on {@link CurrentUserProvider} rather than on how
- * identity happens to arrive.
- *
  * <p>The token has already been checked by the resource-server filter — signature verified against
  * auth-service's published key, expiry enforced — before anything reaches here. So the subject
- * claim can be trusted, which is exactly the difference from M1: a header the client wrote versus a
- * claim signed by a private key this service does not hold.
+ * claim can be trusted: it was signed by a private key this service does not hold, not written by
+ * the client.
  */
 @Component
 public class JwtCurrentUserProvider implements CurrentUserProvider {

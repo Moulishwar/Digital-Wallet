@@ -66,16 +66,14 @@ a real distributed-systems problem with a simple, honest answer.
 **Prerequisites:** JDK 21, Docker Desktop. Maven comes with the repository via `mvnw`.
 
 ```bash
-cp .env.example .env      # then fill it in — several values have no default on purpose
+cp .env.example .env
 ```
 
 You need to generate two secrets. Neither has a fallback: a missing value fails startup loudly
 rather than quietly running on something insecure.
 
 ```bash
-# The RSA keypair auth-service signs tokens with (see .env.example for the full recipe).
-# Written to a temporary directory and deleted afterwards, so a private key never lands in your
-# working tree where a stray `git add` could pick it up.
+# The RSA keypair auth-service signs tokens with
 KEYS=$(mktemp -d)
 openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -outform DER -out "$KEYS/priv.der"
 openssl pkcs8 -topk8 -nocrypt -inform DER -in "$KEYS/priv.der" -outform DER -out "$KEYS/priv_pkcs8.der"
@@ -247,7 +245,7 @@ payment was refused when it was never even seen.
   hostile is inside the perimeter. The authority granted is `ROLE_SERVICE` — a perfectly valid user
   token gets 403, because being a legitimate user is not authority to post into the ledger.
 - **Secrets have no defaults.** A missing value fails startup rather than falling back to something
-  guessable. `.env` is gitignored; `.env.example` carries placeholders.
+  guessable.
 - **Errors never leak existence.** Login returns one message for both "no such user" and "wrong
   password".
 - All failures are RFC 7807 Problem Details with a trace id, in the same shape from every service —

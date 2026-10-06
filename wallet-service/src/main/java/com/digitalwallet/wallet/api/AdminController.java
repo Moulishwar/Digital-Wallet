@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Operational checks.
  *
- * <p>Restricted to {@code ROLE_ADMIN} in M2, once there are roles to restrict it to.
+ * <p>Restricted to {@code ROLE_ADMIN}.
  */
 @RestController
 @RequestMapping("/api/admin")

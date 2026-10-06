@@ -6,8 +6,7 @@ import java.util.UUID;
  * Who is calling, and the token they called with.
  *
  * <p>An interface rather than direct use of {@code SecurityContextHolder} so that controllers and
- * services depend on the question, not on how the answer happens to arrive. The same seam let
- * wallet-service swap a placeholder header for real JWTs in M2 without touching a single caller.
+ * services depend on the question, not on how the answer happens to arrive.
  */
 public interface CurrentUserProvider {
 

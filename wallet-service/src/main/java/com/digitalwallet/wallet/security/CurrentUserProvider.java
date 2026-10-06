@@ -5,8 +5,8 @@ import java.util.UUID;
 /**
  * Supplies the id of the user making the current request.
  *
- * <p>Exists as an interface so that the M1 placeholder can be swapped for real JWT extraction in
- * M2 without touching a single controller. Controllers never read identity from a request
+ * <p>An interface so that controllers depend on the question, not on how identity happens to
+ * arrive. Controllers never read identity from a request
  * parameter or body — only from here — which is what keeps a caller from acting as someone else
  * simply by sending a different id.
  */

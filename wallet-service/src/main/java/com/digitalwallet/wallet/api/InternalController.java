@@ -30,8 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
  * table simply has no entry under {@code /internal}, so they are unreachable from outside the
  * network the services share.
  *
- * <p>M5 additionally requires a service credential header here, so that reaching the network is
- * not by itself enough to move money.
+ * <p>A service credential header is also required here, so that reaching the network is not by
+ * itself enough to move money.
  */
 @RestController
 @RequestMapping("/internal")
