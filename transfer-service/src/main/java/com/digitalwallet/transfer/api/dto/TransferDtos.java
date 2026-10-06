@@ -46,7 +46,7 @@ public final class TransferDtos {
             Long amountMinor,
 
             @Size(max = 140)
-            @Schema(description = "Optional memo shown to the sender", example = "Dinner")
+            @Schema(description = "Optional note, shown to both sender and recipient", example = "Dinner")
             String note) {
     }
 
@@ -60,6 +60,13 @@ public final class TransferDtos {
     public record TransferResponse(UUID transferId,
                                    TransferStatus status,
                                    UUID recipientUserId,
+                                   @Schema(description = "Recipient's handle when the transfer was made. Null "
+                                           + "on transfers created before handles were recorded.",
+                                           example = "alice")
+                                   String recipientHandle,
+                                   @Schema(description = "Recipient's display name when the transfer was made",
+                                           example = "Alice Rao")
+                                   String recipientName,
                                    long amountMinor,
                                    @Schema(description = "Formatted amount, for display only", example = "500.00")
                                    BigDecimal amount,
@@ -75,6 +82,8 @@ public final class TransferDtos {
                     transfer.getId(),
                     transfer.getStatus(),
                     transfer.getRecipientUserId(),
+                    transfer.getRecipientHandle(),
+                    transfer.getRecipientName(),
                     transfer.getAmountMinor(),
                     Money.ofMinor(transfer.getAmountMinor()).toMajor(),
                     transfer.getNote(),

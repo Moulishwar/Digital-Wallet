@@ -2,6 +2,7 @@ package com.digitalwallet.transfer.client;
 
 import com.digitalwallet.common.security.ServiceCredential;
 import com.digitalwallet.transfer.domain.FailureReason;
+import com.digitalwallet.transfer.domain.Transfer;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import tools.jackson.databind.ObjectMapper;
 import java.time.Duration;
@@ -66,18 +67,27 @@ public class WalletPostingClient {
     /**
      * Posts the movement.
      *
-     * @param externalRef the transfer id. Unique in the ledger, which is what makes a later retry
-     *                    of this exact call incapable of moving the money twice.
+     * <p>The transfer id is sent as the {@code externalRef}. It is unique in the ledger, which is
+     * what makes a later retry of this exact call incapable of moving the money twice.
+     *
+     * <p>Everything is built from the stored transfer rather than from the live request, so a
+     * retry from the reconciliation sweep sends exactly what the first attempt did — statement
+     * labels included.
      */
-    public PostingOutcome post(UUID externalRef, UUID senderUserId, UUID recipientUserId,
-                               long amountMinor, String description) {
+    public PostingOutcome post(Transfer transfer) {
+        UUID externalRef = transfer.getId();
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("externalRef", externalRef.toString());
-        body.put("fromOwnerUserId", senderUserId.toString());
-        body.put("toOwnerUserId", recipientUserId.toString());
-        body.put("amountMinor", amountMinor);
-        body.put("description", description);
+        body.put("fromOwnerUserId", transfer.getSenderUserId().toString());
+        body.put("toOwnerUserId", transfer.getRecipientUserId().toString());
+        body.put("amountMinor", transfer.getAmountMinor());
+        body.put("description", "Transfer " + externalRef);
+        body.put("memo", transfer.getNote());
+        body.put("fromHandle", transfer.getSenderHandle());
+        body.put("fromName", transfer.getSenderName());
+        body.put("toHandle", transfer.getRecipientHandle());
+        body.put("toName", transfer.getRecipientName());
 
         ResponseEntity<String> response;
         try {

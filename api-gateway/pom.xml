@@ -71,6 +71,19 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <image>
+            <env>
+              <!-- The buildpack's memory calculator caps direct memory at 10 MB by default. That
+                   suits a servlet service, but the gateway runs on Netty, whose pooled buffers
+                   live in direct memory: at 10 MB it fails with OutOfDirectMemoryError after a
+                   few dozen requests. Baked into the image so every deployment gets it, not
+                   just docker-compose. -->
+              <BPE_DELIM_JAVA_TOOL_OPTIONS xml:space="preserve"> </BPE_DELIM_JAVA_TOOL_OPTIONS>
+              <BPE_APPEND_JAVA_TOOL_OPTIONS>-XX:MaxDirectMemorySize=64M</BPE_APPEND_JAVA_TOOL_OPTIONS>
+            </env>
+          </image>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

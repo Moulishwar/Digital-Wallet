@@ -111,6 +111,17 @@
           <configuration>
             <image>
               <name>${image.registry}/${project.artifactId}:${image.tag}</name>
+              <!-- The default builder produces images with no shell and no curl or wget, so a
+                   container healthcheck has nothing to run. The health-checker buildpack adds a
+                   small static HTTP probe at /workspace/health-check for exactly that purpose;
+                   docker-compose.yml points it at each service's actuator endpoint. -->
+              <buildpacks>
+                <buildpack>urn:cnb:builder:paketo-buildpacks/java</buildpack>
+                <buildpack>docker.io/paketobuildpacks/health-checker:2.14.0</buildpack>
+              </buildpacks>
+              <env>
+                <BP_HEALTH_CHECKER_ENABLED>true</BP_HEALTH_CHECKER_ENABLED>
+              </env>
             </image>
           </configuration>
         </plugin>

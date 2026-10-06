@@ -1,5 +1,7 @@
 package com.digitalwallet.transfer.reconciliation;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -140,7 +142,12 @@ class ReconciliationIT extends AbstractTransferIntegrationTest {
                 .extracting(Transfer::getStatus)
                 .isEqualTo(TransferStatus.COMPLETED);
 
-        WIREMOCK.verify(1, postRequestedFor(urlPathEqualTo("/internal/postings")));
+        // The retry is rebuilt from the stored transfer, not from the long-gone request, and must
+        // still carry the labels the recipient's statement will show. auth-service is not asked
+        // again: the stubs above were reset, and the sweep has no user token to ask with.
+        WIREMOCK.verify(1, postRequestedFor(urlPathEqualTo("/internal/postings"))
+                .withRequestBody(matchingJsonPath("$.fromName", equalTo(SENDER_NAME)))
+                .withRequestBody(matchingJsonPath("$.toName", equalTo(RECIPIENT_NAME))));
     }
 
     @Test

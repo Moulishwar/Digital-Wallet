@@ -48,11 +48,22 @@ public class LedgerLine {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    /**
+     * Who the money on this line came from or went to, as they were named when it moved. Null for
+     * a top-up, whose other side is the funding account rather than a person.
+     */
+    @Column(name = "counterparty_handle", length = 32, updatable = false)
+    private String counterpartyHandle;
+
+    @Column(name = "counterparty_name", length = 120, updatable = false)
+    private String counterpartyName;
+
     protected LedgerLine() {
         // for JPA
     }
 
-    LedgerLine(JournalEntry journalEntry, Account account, Money amount, Money balanceAfter) {
+    LedgerLine(JournalEntry journalEntry, Account account, Money amount, Money balanceAfter,
+               Counterparty counterparty) {
         if (amount.isZero()) {
             throw new IllegalArgumentException("A ledger line must move a non-zero amount");
         }
@@ -62,6 +73,10 @@ public class LedgerLine {
         this.amountMinor = amount.minor();
         this.balanceAfterMinor = balanceAfter.minor();
         this.createdAt = Instant.now();
+        if (counterparty != null) {
+            this.counterpartyHandle = counterparty.handle();
+            this.counterpartyName = counterparty.displayName();
+        }
     }
 
     public UUID getId() {
@@ -90,6 +105,14 @@ public class LedgerLine {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public String getCounterpartyHandle() {
+        return counterpartyHandle;
+    }
+
+    public String getCounterpartyName() {
+        return counterpartyName;
     }
 
     public boolean isDebit() {

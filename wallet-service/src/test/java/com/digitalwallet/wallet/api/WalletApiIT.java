@@ -322,6 +322,66 @@ class WalletApiIT extends AbstractPostgresIntegrationTest {
     }
 
     @Test
+    @DisplayName("each side's statement names the other party, and both show the sender's note")
+    void statementsNameTheCounterpartyAndCarryTheNote() throws Exception {
+        UUID alice = provisionUser();
+        UUID bob = provisionUser();
+        topUp(alice, 30000);
+
+        mockMvc.perform(post("/internal/postings")
+                        .with(serviceCall())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"externalRef": "transfer-labelled", "fromOwnerUserId": "%s",
+                                 "toOwnerUserId": "%s", "amountMinor": 5000, "description": "Transfer",
+                                 "memo": "Dinner",
+                                 "fromHandle": "alice", "fromName": "Alice Rao",
+                                 "toHandle": "bob", "toName": "Bob Iyer"}
+                                """.formatted(alice, bob)))
+                .andExpect(status().isCreated());
+
+        // Alice's line is the debit, so the other party is Bob.
+        mockMvc.perform(get("/api/wallets/me/statement").with(userToken(alice)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lines[0].amountMinor").value(-5000))
+                .andExpect(jsonPath("$.lines[0].counterpartyHandle").value("bob"))
+                .andExpect(jsonPath("$.lines[0].counterpartyName").value("Bob Iyer"))
+                .andExpect(jsonPath("$.lines[0].memo").value("Dinner"))
+                // A top-up has no person on the other side.
+                .andExpect(jsonPath("$.lines[1].type").value("TOPUP"))
+                .andExpect(jsonPath("$.lines[1].counterpartyHandle", nullValue()))
+                .andExpect(jsonPath("$.lines[1].memo", nullValue()));
+
+        // Bob's line is the credit, so the other party is Alice — and he sees her note.
+        mockMvc.perform(get("/api/wallets/me/statement").with(userToken(bob)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lines[0].amountMinor").value(5000))
+                .andExpect(jsonPath("$.lines[0].counterpartyHandle").value("alice"))
+                .andExpect(jsonPath("$.lines[0].counterpartyName").value("Alice Rao"))
+                .andExpect(jsonPath("$.lines[0].memo").value("Dinner"));
+    }
+
+    @Test
+    @DisplayName("a posting without statement labels still moves the money")
+    void unlabelledPostingStillSucceeds() throws Exception {
+        UUID alice = provisionUser();
+        UUID bob = provisionUser();
+        topUp(alice, 1000);
+
+        // The labels are presentation, not part of the money movement. An older caller that does
+        // not send them must not be refused.
+        mockMvc.perform(post("/internal/postings")
+                        .with(serviceCall())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(postingBody("transfer-unlabelled", alice, bob, 400)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/wallets/me/statement").with(userToken(bob)))
+                .andExpect(jsonPath("$.lines[0].amountMinor").value(400))
+                .andExpect(jsonPath("$.lines[0].counterpartyHandle", nullValue()));
+    }
+
+    @Test
     @DisplayName("a recipient who never got a wallet is provisioned on the way in, rather than "
             + "having the transfer fail for a reason the sender cannot act on")
     void postingProvisionsAMissingRecipientWallet() throws Exception {

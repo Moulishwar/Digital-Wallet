@@ -104,6 +104,9 @@ CREATE TABLE journal_entry
     description  VARCHAR2(255),
     posted_at    TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
 
+    -- The sender's note, shown on both parties' statements (Postgres migration V4).
+    memo         VARCHAR2(140),
+
     CONSTRAINT journal_entry_pk PRIMARY KEY (id),
     CONSTRAINT journal_entry_ref_uk UNIQUE (external_ref),
     CONSTRAINT journal_entry_type_chk CHECK (type IN ('TOPUP', 'TRANSFER', 'REVERSAL'))
@@ -128,6 +131,11 @@ CREATE TABLE ledger_line
     balance_after_minor NUMBER(19)                 NOT NULL,
 
     created_at          TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+
+    -- Who the money on this line came from or went to, captured at posting time (Postgres
+    -- migration V4). NULL for top-ups, whose other side is the funding account.
+    counterparty_handle VARCHAR2(32),
+    counterparty_name   VARCHAR2(120),
 
     CONSTRAINT ledger_line_pk PRIMARY KEY (id),
     CONSTRAINT ledger_line_entry_fk FOREIGN KEY (journal_entry_id) REFERENCES journal_entry (id),

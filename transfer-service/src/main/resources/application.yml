@@ -64,8 +64,8 @@ auth:
   read-timeout: 3s
 
 transfers:
-  # Ceiling on a single transfer. Not a regulatory limit — a blast radius. Per-day and velocity
-  # limits would come with it in v2.
+  # Ceiling on a single transfer. Not a regulatory limit — a blast radius. There are no per-day
+  # or velocity limits.
   max-amount-minor: 10000000
   reconciliation:
     # How often the sweep looks for transfers whose outcome is still unknown, and how long a

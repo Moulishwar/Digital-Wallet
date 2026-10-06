@@ -200,7 +200,8 @@ class GatewayRoutingIT {
         webTestClient.get().uri("/api/wallets/me")
                 .header("Authorization", "Bearer " + expired)
                 .exchange()
-                .expectStatus().isUnauthorized();
+                .expectStatus().isUnauthorized()
+                .expectHeader().contentTypeCompatibleWith("application/problem+json");
 
         WALLET.verify(0, getRequestedFor(urlPathEqualTo("/api/wallets/me")));
     }
@@ -224,12 +225,17 @@ class GatewayRoutingIT {
     }
 
     @Test
-    @DisplayName("a token that is not signed by the published key is rejected")
+    @DisplayName("a token that is not signed by the published key is rejected, with the same "
+            + "Problem Detail body as a missing token")
     void forgedTokenIsRejected() {
         webTestClient.get().uri("/api/wallets/me")
                 .header("Authorization", "Bearer not.a.real.token")
                 .exchange()
-                .expectStatus().isUnauthorized();
+                .expectStatus().isUnauthorized()
+                .expectHeader().contentTypeCompatibleWith("application/problem+json")
+                .expectBody()
+                .jsonPath("$.title").isEqualTo("Unauthorized")
+                .jsonPath("$.type").isEqualTo("https://digitalwallet.example/errors/unauthorized");
     }
 
     // ------------------------------------------------------------- /internal

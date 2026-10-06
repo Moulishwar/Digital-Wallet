@@ -17,6 +17,8 @@ import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
+import org.springframework.security.web.server.authorization.ServerAccessDeniedHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
@@ -40,6 +42,15 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
                                                          ObjectMapper objectMapper,
                                                          CorsConfigurationSource corsConfigurationSource) {
+        ServerAuthenticationEntryPoint unauthorized = (exchange, denied) -> GatewayProblem.write(
+                exchange, objectMapper, HttpStatus.UNAUTHORIZED,
+                "unauthorized", "Unauthorized",
+                "A valid bearer token is required");
+        ServerAccessDeniedHandler forbidden = (exchange, denied) -> GatewayProblem.write(
+                exchange, objectMapper, HttpStatus.FORBIDDEN,
+                "forbidden", "Forbidden",
+                "You are not permitted to access this resource");
+
         return http
                 // Stateless bearer-token API with no cookies, so there is no ambient credential a
                 // cross-site request could ride on.
@@ -62,17 +73,18 @@ public class SecurityConfig {
 
                         .anyExchange().authenticated())
 
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> { }))
+                // Set here as well as below. A request that presents a token which then fails
+                // verification is rejected by the resource server's own entry point, not the one
+                // under exceptionHandling — leaving it unset there answers a bad token with an
+                // empty-bodied 401 while a missing one gets a Problem Detail.
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> { })
+                        .authenticationEntryPoint(unauthorized)
+                        .accessDeniedHandler(forbidden))
 
                 .exceptionHandling(handling -> handling
-                        .authenticationEntryPoint((exchange, denied) -> GatewayProblem.write(
-                                exchange, objectMapper, HttpStatus.UNAUTHORIZED,
-                                "unauthorized", "Unauthorized",
-                                "A valid bearer token is required"))
-                        .accessDeniedHandler((exchange, denied) -> GatewayProblem.write(
-                                exchange, objectMapper, HttpStatus.FORBIDDEN,
-                                "forbidden", "Forbidden",
-                                "You are not permitted to access this resource")))
+                        .authenticationEntryPoint(unauthorized)
+                        .accessDeniedHandler(forbidden))
                 .build();
     }
 

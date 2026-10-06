@@ -65,7 +65,8 @@ public class TransferController {
      * back as a Problem Detail with the status matching the reason.
      *
      * <p>The response is written as pre-serialized JSON so that a replayed request returns the
-     * original bytes rather than a fresh rendering of them.
+     * original response rather than a fresh rendering of it — the same fields and values, though
+     * not byte for byte, since jsonb storage reorders keys (see {@code TransferService.SendOutcome}).
      */
     @PostMapping
     @Operation(summary = "Send money to another user (idempotent)")

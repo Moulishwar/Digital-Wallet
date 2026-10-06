@@ -9,6 +9,7 @@ import com.digitalwallet.wallet.api.dto.WalletDtos.CreateAccountRequest;
 import com.digitalwallet.wallet.api.dto.WalletDtos.PostingRequest;
 import com.digitalwallet.wallet.api.dto.WalletDtos.PostingResponse;
 import com.digitalwallet.wallet.api.dto.WalletDtos.WalletResponse;
+import com.digitalwallet.wallet.ledger.Counterparty;
 import com.digitalwallet.wallet.ledger.LedgerPostingService;
 import com.digitalwallet.wallet.ledger.PostingCommand;
 import com.digitalwallet.wallet.ledger.PostingResult;
@@ -70,7 +71,7 @@ public class InternalController {
      *
      * <p>The request names <em>users</em>, not accounts. Resolving them here keeps account ids
      * inside the service that owns them, and lets a transfer to someone whose wallet was never
-     * provisioned — because this service was down when they registered (section 7.1) — succeed
+     * provisioned — because this service was down when they registered — succeed
      * instead of failing for a reason the sender cannot act on.
      *
      * <p>Returns 200 rather than 201 when {@code externalRef} has been seen before, which is how
@@ -93,7 +94,10 @@ public class InternalController {
                 from.getId(),
                 to.getId(),
                 Money.positive(request.amountMinor()),
-                request.description());
+                request.description(),
+                request.memo(),
+                Counterparty.ofNullable(request.fromHandle(), request.fromName()),
+                Counterparty.ofNullable(request.toHandle(), request.toName()));
 
         PostingResult result;
         try {

@@ -5,10 +5,4 @@ target/
 .idea/
 *.iml
 
-Full.md
-JD.md
-DESIGN.md
-
-scripts/
-
 .env

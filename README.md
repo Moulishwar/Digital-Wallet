@@ -114,12 +114,20 @@ Run the services yourself when you want a debugger attached.
 ### Tests
 
 ```bash
-./mvnw verify                # 119 tests: 35 unit, 84 integration against real PostgreSQL
+./mvnw verify                # 123 tests: 35 unit, 88 integration against real PostgreSQL
 ./mvnw -Psecurity-scan verify   # + OWASP dependency-check (slow on first run)
 ```
 
 Docker must be running: the integration tests use Testcontainers, not H2. See
 [Troubleshooting](#troubleshooting) if Testcontainers cannot find your daemon.
+
+### Troubleshooting
+
+- **`permission denied while trying to connect to the docker API`** (Linux): your user is not in
+  the `docker` group. Run `sudo usermod -aG docker $USER`, then log out and back in.
+- **`Could not find a valid Docker environment`**: the Docker daemon is not running, or
+  Testcontainers is looking for the wrong socket. Start Docker; with Colima or Rancher Desktop,
+  set `DOCKER_HOST` to the socket they expose.
 
 ---
 

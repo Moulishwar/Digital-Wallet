@@ -3,7 +3,7 @@
 -- Note what is absent: there is no balance and no ledger here. This service records that a user
 -- asked to send money and how that request turned out; wallet-service is the only place a balance
 -- exists. Keeping the two apart is what lets the money movement itself stay a single local
--- transaction (DESIGN.md section 4.2).
+-- transaction.
 
 CREATE TABLE transfer
 (
@@ -62,7 +62,7 @@ CREATE TABLE idempotency_record
     -- worth reporting rather than silently answering, so the hash is stored to detect it.
     --
     -- VARCHAR, never CHAR: CHAR(64) is blank-padded, so a hash read back would not equal the one
-    -- written. This exact mistake has already been made twice in this project.
+    -- written.
     request_hash    VARCHAR(64)  NOT NULL,
 
     -- NULL until the request finishes. The row is claimed first and answered second, so that two

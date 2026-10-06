@@ -38,10 +38,10 @@ public final class RequestHash {
 
     /**
      * Handles are case-insensitive and may be written with a leading {@code @}. Both spellings name
-     * the same person, so both must hash the same — and this matches how the handle is resolved
-     * downstream.
+     * the same person, so both must hash the same. TransferService resolves the recipient with this
+     * same canonical form, which is what keeps "the request" and "who gets paid" in agreement.
      */
-    static String canonicalHandle(String handle) {
+    public static String canonicalHandle(String handle) {
         if (handle == null) {
             return "";
         }

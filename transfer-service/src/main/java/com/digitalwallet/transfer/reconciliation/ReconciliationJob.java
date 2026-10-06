@@ -102,12 +102,7 @@ public class ReconciliationJob {
         // wallet-service is certain there is no such posting, so the original attempt never
         // committed and retrying cannot duplicate anything.
         log.info("Transfer {} never committed — retrying the posting", transfer.getId());
-        PostingOutcome outcome = walletClient.post(
-                transfer.getId(),
-                transfer.getSenderUserId(),
-                transfer.getRecipientUserId(),
-                transfer.getAmountMinor(),
-                "Transfer " + transfer.getId());
+        PostingOutcome outcome = walletClient.post(transfer);
 
         switch (outcome) {
             case PostingOutcome.Posted posted -> {

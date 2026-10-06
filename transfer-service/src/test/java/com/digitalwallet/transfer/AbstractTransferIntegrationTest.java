@@ -86,6 +86,7 @@ public abstract class AbstractTransferIntegrationTest {
         jdbcTemplate.execute("DELETE FROM idempotency_record");
         jdbcTemplate.execute("DELETE FROM transfer");
         WIREMOCK.resetAll();
+        stubCallerProfile();
     }
 
     // ------------------------------------------------------------------ tokens
@@ -101,13 +102,30 @@ public abstract class AbstractTransferIntegrationTest {
 
     // ------------------------------------------------------------------- stubs
 
+    protected static final String SENDER_HANDLE = "sender";
+    protected static final String SENDER_NAME = "Sam Sender";
+    protected static final String RECIPIENT_NAME = "Test User";
+
     /** auth-service resolves a handle to a user id. */
     protected static void stubHandleResolves(String handle, UUID userId) {
         WIREMOCK.stubFor(get(urlPathEqualTo("/api/users/lookup"))
                 .withQueryParam("handle", com.github.tomakehurst.wiremock.client.WireMock.equalTo(handle))
                 .willReturn(okJson("""
-                        {"userId": "%s", "handle": "%s", "fullName": "Test User"}
-                        """.formatted(userId, handle))));
+                        {"userId": "%s", "handle": "%s", "fullName": "%s"}
+                        """.formatted(userId, handle, RECIPIENT_NAME))));
+    }
+
+    /**
+     * auth-service describes the caller, for the label on the recipient's statement. Installed for
+     * every test, since every send asks. The id in it is deliberately unrelated to any test user:
+     * identity must come from the token, and only the labels from here.
+     */
+    protected static void stubCallerProfile() {
+        WIREMOCK.stubFor(get(urlPathEqualTo("/api/users/me"))
+                .willReturn(okJson("""
+                        {"id": "%s", "handle": "%s", "email": "sender@example.com",
+                         "fullName": "%s", "status": "ACTIVE", "roles": ["ROLE_USER"]}
+                        """.formatted(UUID.randomUUID(), SENDER_HANDLE, SENDER_NAME))));
     }
 
     /** auth-service has never heard of this handle. */

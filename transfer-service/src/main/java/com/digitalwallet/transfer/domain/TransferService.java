@@ -19,7 +19,6 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,12 +98,14 @@ public class TransferService {
 
     public SendOutcome send(String idempotencyKey, SendTransferRequest request) {
         UUID senderUserId = currentUser.requireCurrentUserId();
+        String token = currentUser.requireCurrentToken();
         Money amount = requireSendableAmount(request.amountMinor());
 
         // Resolved before the key is claimed. A request naming a handle that does not exist has no
         // side effects to protect, so it should fail the same way every time it is sent rather than
         // burning the caller's key on an answer that will never change.
-        UUID recipientUserId = resolveRecipient(request.recipientHandle(), senderUserId);
+        Party recipient = resolveRecipient(request.recipientHandle(), senderUserId, token);
+        Party sender = userDirectory.requireCaller(senderUserId, token);
 
         String requestHash = RequestHash.of(request.recipientHandle(), amount.minor(), request.note());
         Claim claim = idempotencyService.claim(idempotencyKey, senderUserId, requestHash);
@@ -118,7 +119,7 @@ public class TransferService {
         Transfer transfer;
         try {
             transfer = transferRepository.saveAndFlush(
-                    Transfer.open(senderUserId, recipientUserId, amount, request.note()));
+                    Transfer.open(sender, recipient, amount, request.note()));
         } catch (RuntimeException couldNotOpen) {
             // No transfer exists, so there is nothing for a retry to duplicate. Hand the key back
             // rather than leaving it claimed and unanswerable forever.
@@ -136,12 +137,7 @@ public class TransferService {
      * the client's next retry wait for something that will never arrive.
      */
     private SendOutcome carryOut(Transfer transfer, UUID recordId) {
-        PostingOutcome outcome = walletClient.post(
-                transfer.getId(),
-                transfer.getSenderUserId(),
-                transfer.getRecipientUserId(),
-                transfer.getAmountMinor(),
-                "Transfer " + transfer.getId());
+        PostingOutcome outcome = walletClient.post(transfer);
 
         SendOutcome answer = switch (outcome) {
             case PostingOutcome.Posted posted -> {
@@ -239,18 +235,15 @@ public class TransferService {
         return Money.positive(amountMinor);
     }
 
-    private UUID resolveRecipient(String handle, UUID senderUserId) {
-        Optional<UUID> recipient =
-                userDirectory.findUserIdByHandle(handle, currentUser.requireCurrentToken());
+    private Party resolveRecipient(String handle, UUID senderUserId, String token) {
+        Party recipient = userDirectory.findByHandle(RequestHash.canonicalHandle(handle), token)
+                .orElseThrow(() -> new ApiException(ErrorCode.ACCOUNT_NOT_FOUND, "No user with that handle"));
 
-        UUID recipientUserId = recipient.orElseThrow(() ->
-                new ApiException(ErrorCode.ACCOUNT_NOT_FOUND, "No user with that handle"));
-
-        if (recipientUserId.equals(senderUserId)) {
+        if (recipient.userId().equals(senderUserId)) {
             // Would net to zero while still writing two ledger lines and a transfer row.
             throw new ApiException(ErrorCode.VALIDATION_FAILED, "You cannot send money to yourself");
         }
-        return recipientUserId;
+        return recipient;
     }
 
     private SendOutcome json(int status, TransferResponse body) {

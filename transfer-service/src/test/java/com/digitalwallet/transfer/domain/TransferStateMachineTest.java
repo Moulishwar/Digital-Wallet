@@ -20,7 +20,11 @@ import org.junit.jupiter.params.provider.EnumSource;
 class TransferStateMachineTest {
 
     private static Transfer newTransfer() {
-        return Transfer.open(UUID.randomUUID(), UUID.randomUUID(), Money.positive(50_000L), "Dinner");
+        return Transfer.open(party("alice"), party("bob"), Money.positive(50_000L), "Dinner");
+    }
+
+    private static Party party(String handle) {
+        return new Party(UUID.randomUUID(), handle, null);
     }
 
     @Test
@@ -37,7 +41,7 @@ class TransferStateMachineTest {
     @Test
     @DisplayName("a transfer cannot be opened between a user and themselves")
     void rejectsSelfTransfer() {
-        UUID sameUser = UUID.randomUUID();
+        Party sameUser = party("alice");
 
         assertThatThrownBy(() -> Transfer.open(sameUser, sameUser, Money.positive(100L), null))
                 .isInstanceOf(IllegalArgumentException.class);

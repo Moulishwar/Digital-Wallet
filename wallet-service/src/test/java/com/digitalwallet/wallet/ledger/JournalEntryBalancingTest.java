@@ -28,9 +28,9 @@ class JournalEntryBalancingTest {
         Account to = wallet();
         from.applyDelta(Money.ofMinor(10_000)); // fund it first
 
-        JournalEntry entry = JournalEntry.create(JournalEntryType.TRANSFER, "ref-1", "test");
-        entry.addLine(from, Money.ofMinor(-5_000));
-        entry.addLine(to, Money.ofMinor(5_000));
+        JournalEntry entry = JournalEntry.create(JournalEntryType.TRANSFER, "ref-1", "test", null);
+        entry.addLine(from, Money.ofMinor(-5_000), null);
+        entry.addLine(to, Money.ofMinor(5_000), null);
 
         assertThat(entry.sumOfLines()).isEqualTo(Money.ZERO);
         entry.requireBalanced(); // does not throw
@@ -43,9 +43,9 @@ class JournalEntryBalancingTest {
         Account to = wallet();
         from.applyDelta(Money.ofMinor(10_000));
 
-        JournalEntry entry = JournalEntry.create(JournalEntryType.TRANSFER, "ref-2", "test");
-        entry.addLine(from, Money.ofMinor(-5_000));
-        entry.addLine(to, Money.ofMinor(4_000)); // 1000 paise would vanish
+        JournalEntry entry = JournalEntry.create(JournalEntryType.TRANSFER, "ref-2", "test", null);
+        entry.addLine(from, Money.ofMinor(-5_000), null);
+        entry.addLine(to, Money.ofMinor(4_000), null); // 1000 paise would vanish
 
         assertThatThrownBy(entry::requireBalanced)
                 .isInstanceOf(ApiException.class)
@@ -58,8 +58,8 @@ class JournalEntryBalancingTest {
         Account account = wallet();
         account.applyDelta(Money.ofMinor(10_000));
 
-        JournalEntry entry = JournalEntry.create(JournalEntryType.TRANSFER, "ref-3", "test");
-        entry.addLine(account, Money.ofMinor(-5_000));
+        JournalEntry entry = JournalEntry.create(JournalEntryType.TRANSFER, "ref-3", "test", null);
+        entry.addLine(account, Money.ofMinor(-5_000), null);
 
         assertThatThrownBy(entry::requireBalanced)
                 .isInstanceOf(ApiException.class)
@@ -86,8 +86,8 @@ class JournalEntryBalancingTest {
     void linesCarryRunningBalance() {
         Account account = wallet();
 
-        JournalEntry first = JournalEntry.create(JournalEntryType.TOPUP, "ref-4", "top-up");
-        LedgerLine line = first.addLine(account, Money.ofMinor(7_500));
+        JournalEntry first = JournalEntry.create(JournalEntryType.TOPUP, "ref-4", "top-up", null);
+        LedgerLine line = first.addLine(account, Money.ofMinor(7_500), null);
 
         assertThat(line.getBalanceAfterMinor()).isEqualTo(7_500);
         assertThat(account.getBalanceMinor()).isEqualTo(7_500);

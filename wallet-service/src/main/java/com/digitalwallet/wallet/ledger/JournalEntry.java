@@ -51,6 +51,10 @@ public class JournalEntry {
     @Column(name = "posted_at", nullable = false, updatable = false)
     private Instant postedAt;
 
+    /** The sender's note, shown to both parties. Null when none was given. */
+    @Column(name = "memo", length = 140, updatable = false)
+    private String memo;
+
     @OneToMany(mappedBy = "journalEntry", cascade = CascadeType.ALL)
     private List<LedgerLine> lines = new ArrayList<>();
 
@@ -58,16 +62,17 @@ public class JournalEntry {
         // for JPA
     }
 
-    private JournalEntry(JournalEntryType type, String externalRef, String description) {
+    private JournalEntry(JournalEntryType type, String externalRef, String description, String memo) {
         this.id = UUID.randomUUID();
         this.type = type;
         this.externalRef = externalRef;
         this.description = description;
+        this.memo = memo;
         this.postedAt = Instant.now();
     }
 
-    static JournalEntry create(JournalEntryType type, String externalRef, String description) {
-        return new JournalEntry(type, externalRef, description);
+    static JournalEntry create(JournalEntryType type, String externalRef, String description, String memo) {
+        return new JournalEntry(type, externalRef, description, memo);
     }
 
     /**
@@ -75,10 +80,12 @@ public class JournalEntry {
      *
      * <p>The account must already be locked by the caller — see
      * {@code AccountRepository.lockAllByIdInOrder}.
+     *
+     * @param counterparty who this line's statement row should name as the other party; may be null
      */
-    LedgerLine addLine(Account account, Money amount) {
+    LedgerLine addLine(Account account, Money amount, Counterparty counterparty) {
         Money balanceAfter = account.applyDelta(amount);
-        LedgerLine line = new LedgerLine(this, account, amount, balanceAfter);
+        LedgerLine line = new LedgerLine(this, account, amount, balanceAfter, counterparty);
         lines.add(line);
         return line;
     }
@@ -126,6 +133,10 @@ public class JournalEntry {
 
     public Instant getPostedAt() {
         return postedAt;
+    }
+
+    public String getMemo() {
+        return memo;
     }
 
     public List<LedgerLine> getLines() {

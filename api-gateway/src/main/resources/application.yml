@@ -73,10 +73,9 @@ gateway:
 
   rate-limit:
     enabled: true
-    # In-memory, per instance. Redis is the standard answer for a shared limit across instances,
-    # but adding it contradicts the lean-infrastructure decision for a
-    # system that runs one gateway. The limitation is stated in the README rather than hidden:
-    # run two gateways and the effective limit doubles.
+    # In-memory, per instance. Redis is the standard answer for a limit shared across instances;
+    # it is not used here because the system runs a single gateway. Run two gateways and the
+    # effective limit doubles.
     authenticated:
       capacity: 100
       refill-per-second: 20

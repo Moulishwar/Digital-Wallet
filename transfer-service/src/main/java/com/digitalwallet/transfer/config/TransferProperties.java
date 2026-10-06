@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @param maxAmountMinor  ceiling on a single transfer, in paise. Not a regulatory limit — a blast
  *                        radius, so a fat-fingered or hostile request cannot move an absurd sum in
- *                        one call. Per-day and velocity limits are a v2 concern.
+ *                        one call. There are no per-day or velocity limits.
  * @param reconciliation  settings for the sweep that settles transfers of unknown outcome
  * @param idempotency     settings for handling repeated {@code Idempotency-Key} values
  */

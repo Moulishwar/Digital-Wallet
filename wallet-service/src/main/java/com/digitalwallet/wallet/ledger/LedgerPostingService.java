@@ -67,9 +67,10 @@ public class LedgerPostingService {
 
         Map<UUID, Account> accounts = lockAccounts(command.distinctAccountIds());
 
-        JournalEntry entry = JournalEntry.create(command.type(), command.externalRef(), command.description());
+        JournalEntry entry = JournalEntry.create(
+                command.type(), command.externalRef(), command.description(), command.memo());
         for (PostingCommand.PostingLeg leg : command.legs()) {
-            entry.addLine(accounts.get(leg.accountId()), leg.amount());
+            entry.addLine(accounts.get(leg.accountId()), leg.amount(), leg.counterparty());
         }
         entry.requireBalanced();
 

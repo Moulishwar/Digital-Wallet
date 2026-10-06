@@ -1,5 +1,10 @@
 package com.digitalwallet.transfer.api;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -59,9 +64,58 @@ class TransferApiIT extends AbstractTransferIntegrationTest {
                 .andExpect(jsonPath("$.amount").value(50.00))
                 .andExpect(jsonPath("$.note").value("Dinner"))
                 .andExpect(jsonPath("$.recipientUserId").value(recipient.toString()))
+                .andExpect(jsonPath("$.recipientHandle").value("alice"))
+                .andExpect(jsonPath("$.recipientName").value(RECIPIENT_NAME))
                 .andExpect(jsonPath("$.senderBalanceAfterMinor").value(45_000))
                 .andExpect(jsonPath("$.failureReason", nullValue()))
                 .andExpect(jsonPath("$.transferId", notNullValue()));
+    }
+
+    @Test
+    @DisplayName("the posting carries both parties' names and the note, so each statement can say "
+            + "who the money came from or went to")
+    void postingCarriesStatementLabels() throws Exception {
+        UUID sender = UUID.randomUUID();
+        UUID recipient = UUID.randomUUID();
+        stubHandleResolves("alice", recipient);
+        stubPostingSucceeds(45_000L);
+
+        mockMvc.perform(post("/api/transfers")
+                        .with(userToken(sender))
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sendBody("alice", 5_000L, "Dinner")))
+                .andExpect(status().isCreated());
+
+        WIREMOCK.verify(postRequestedFor(urlPathEqualTo("/internal/postings"))
+                .withRequestBody(matchingJsonPath("$.memo", equalTo("Dinner")))
+                .withRequestBody(matchingJsonPath("$.fromHandle", equalTo(SENDER_HANDLE)))
+                .withRequestBody(matchingJsonPath("$.fromName", equalTo(SENDER_NAME)))
+                .withRequestBody(matchingJsonPath("$.toHandle", equalTo("alice")))
+                .withRequestBody(matchingJsonPath("$.toName", equalTo(RECIPIENT_NAME)))
+                // Identity still comes from the token, not from the profile lookup, whose id the
+                // fixture deliberately makes different.
+                .withRequestBody(matchingJsonPath("$.fromOwnerUserId", equalTo(sender.toString()))));
+    }
+
+    @Test
+    @DisplayName("a recipient written as @Handle is found, because the @ is stripped and case folded "
+            + "before the lookup")
+    void leadingAtSignIsAccepted() throws Exception {
+        UUID recipient = UUID.randomUUID();
+        stubHandleResolves("alice", recipient);
+        stubPostingSucceeds(45_000L);
+
+        mockMvc.perform(post("/api/transfers")
+                        .with(userToken(UUID.randomUUID()))
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sendBody("  @Alice ", 5_000L, null)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.recipientUserId").value(recipient.toString()));
+
+        WIREMOCK.verify(getRequestedFor(urlPathEqualTo("/api/users/lookup"))
+                .withQueryParam("handle", equalTo("alice")));
     }
 
     @Test

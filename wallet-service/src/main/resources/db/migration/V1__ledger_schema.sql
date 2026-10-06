@@ -18,7 +18,7 @@ CREATE TABLE account
 
     -- Materialized cache of SUM(ledger_line.amount_minor) for this account. The ledger is the
     -- source of truth; this column exists so a balance read is not a full history scan. A
-    -- reconciliation check proves the two agree (DESIGN.md section 5.3).
+    -- reconciliation check (GET /api/admin/reconciliation) proves the two agree.
     balance_minor BIGINT       NOT NULL DEFAULT 0,
 
     status        VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE',
@@ -56,7 +56,7 @@ CREATE TABLE journal_entry
 
     -- The caller's identifier for this posting — a transfer id, or a top-up idempotency key.
     -- UNIQUE is what makes posting idempotent: a retry of a posting that already committed hits
-    -- this constraint instead of moving the money twice (DESIGN.md section 7.4).
+    -- this constraint instead of moving the money twice.
     --
     -- Sized for a scoped reference such as 'topup:<uuid>:<client-key>'. Idempotency keys are
     -- namespaced per user because this column is globally unique, and two users independently

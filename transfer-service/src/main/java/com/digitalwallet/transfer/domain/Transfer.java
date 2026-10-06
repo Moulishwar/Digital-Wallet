@@ -56,14 +56,33 @@ public class Transfer {
     @Column(name = "completed_at")
     private Instant completedAt;
 
+    // How each party was named when the transfer was made. Labels only: every decision above is
+    // made on the user ids. Null on rows written before these columns existed.
+
+    @Column(name = "sender_handle", length = 32, updatable = false)
+    private String senderHandle;
+
+    @Column(name = "sender_name", length = 120, updatable = false)
+    private String senderName;
+
+    @Column(name = "recipient_handle", length = 32, updatable = false)
+    private String recipientHandle;
+
+    @Column(name = "recipient_name", length = 120, updatable = false)
+    private String recipientName;
+
     protected Transfer() {
         // for JPA
     }
 
-    private Transfer(UUID id, UUID senderUserId, UUID recipientUserId, long amountMinor, String note) {
+    private Transfer(UUID id, Party sender, Party recipient, long amountMinor, String note) {
         this.id = id;
-        this.senderUserId = senderUserId;
-        this.recipientUserId = recipientUserId;
+        this.senderUserId = sender.userId();
+        this.senderHandle = sender.handle();
+        this.senderName = sender.displayName();
+        this.recipientUserId = recipient.userId();
+        this.recipientHandle = recipient.handle();
+        this.recipientName = recipient.displayName();
         this.amountMinor = amountMinor;
         this.note = note;
         this.status = TransferStatus.PENDING;
@@ -75,14 +94,14 @@ public class Transfer {
      * row exists so that if the process dies in the next millisecond there is still a record that
      * this request was accepted.
      */
-    public static Transfer open(UUID senderUserId, UUID recipientUserId, Money amount, String note) {
-        if (senderUserId.equals(recipientUserId)) {
+    public static Transfer open(Party sender, Party recipient, Money amount, String note) {
+        if (sender.userId().equals(recipient.userId())) {
             throw new IllegalArgumentException("A transfer must have two different parties");
         }
         if (!amount.isPositive()) {
             throw new IllegalArgumentException("A transfer amount must be positive");
         }
-        return new Transfer(UUID.randomUUID(), senderUserId, recipientUserId, amount.minor(), note);
+        return new Transfer(UUID.randomUUID(), sender, recipient, amount.minor(), note);
     }
 
     /** wallet-service confirmed the posting. */
@@ -165,5 +184,21 @@ public class Transfer {
 
     public Instant getCompletedAt() {
         return completedAt;
+    }
+
+    public String getSenderHandle() {
+        return senderHandle;
+    }
+
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public String getRecipientHandle() {
+        return recipientHandle;
+    }
+
+    public String getRecipientName() {
+        return recipientName;
     }
 }

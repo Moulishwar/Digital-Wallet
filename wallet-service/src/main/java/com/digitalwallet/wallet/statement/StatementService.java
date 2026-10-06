@@ -61,7 +61,10 @@ public class StatementService {
                     row.getJournalEntry().getType(),
                     row.getJournalEntry().getDescription(),
                     row.getAmountMinor(),
-                    row.getBalanceAfterMinor()));
+                    row.getBalanceAfterMinor(),
+                    row.getCounterpartyHandle(),
+                    row.getCounterpartyName(),
+                    row.getJournalEntry().getMemo()));
         }
 
         String nextCursor = hasMore && !lines.isEmpty()

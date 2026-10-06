@@ -82,7 +82,31 @@ public final class WalletDtos {
             @Schema(description = "Amount in paise, always positive. The debit side is derived.")
             Long amountMinor,
 
-            @Size(max = 255) String description) {
+            @Size(max = 255) String description,
+
+            // Statement labels. All optional: they make each party's statement readable, but the
+            // money moves the same with or without them, so their absence is never a reason to
+            // refuse a posting.
+
+            @Size(max = 140)
+            @Schema(description = "The sender's note, shown on both parties' statements")
+            String memo,
+
+            @Size(max = 32)
+            @Schema(description = "Sender's handle, shown on the recipient's statement")
+            String fromHandle,
+
+            @Size(max = 120)
+            @Schema(description = "Sender's display name, shown on the recipient's statement")
+            String fromName,
+
+            @Size(max = 32)
+            @Schema(description = "Recipient's handle, shown on the sender's statement")
+            String toHandle,
+
+            @Size(max = 120)
+            @Schema(description = "Recipient's display name, shown on the sender's statement")
+            String toName) {
     }
 
     // --------------------------------------------------------------- responses
@@ -144,11 +168,21 @@ public final class WalletDtos {
                                         String description,
                                         @Schema(description = "Signed: negative left the wallet, positive arrived")
                                         long amountMinor,
-                                        long balanceAfterMinor) {
+                                        long balanceAfterMinor,
+                                        @Schema(description = "Who the money came from (credit) or went to "
+                                                + "(debit). Null for a top-up.", example = "alice")
+                                        String counterpartyHandle,
+                                        @Schema(description = "The counterparty's display name when the money "
+                                                + "moved", example = "Alice Rao")
+                                        String counterpartyName,
+                                        @Schema(description = "The sender's note, shown to both parties",
+                                                example = "Dinner")
+                                        String memo) {
 
         public static StatementLineResponse from(StatementLine line) {
             return new StatementLineResponse(line.lineId(), line.occurredAt(), line.type(),
-                    line.description(), line.amountMinor(), line.balanceAfterMinor());
+                    line.description(), line.amountMinor(), line.balanceAfterMinor(),
+                    line.counterpartyHandle(), line.counterpartyName(), line.memo());
         }
     }
 
