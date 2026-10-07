@@ -36,10 +36,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, ObjectMapper objectMapper) throws Exception {
         http
-                // No CSRF protection, and that is correct here rather than a shortcut. CSRF exists
-                // because browsers attach cookies automatically. This API is stateless and
-                // authenticated by an Authorization header that a browser will never send on its
-                // own, so there is no ambient credential for an attacker's page to ride on.
+                // No CSRF tokens, and that is correct here rather than a shortcut. CSRF exists
+                // because browsers attach cookies automatically. Everything except the token
+                // endpoints is authenticated by an Authorization header a browser never sends on
+                // its own. The one cookie there is — the refresh cookie — is SameSite=Strict, and
+                // is honoured only on requests carrying a custom header another site cannot add
+                // without a CORS preflight (see RefreshTokenCookie).
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 

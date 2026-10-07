@@ -4,11 +4,13 @@ import com.digitalwallet.common.money.Money;
 import com.digitalwallet.wallet.account.Account;
 import com.digitalwallet.wallet.account.TopUpOutcome;
 import com.digitalwallet.wallet.account.WalletService;
+import com.digitalwallet.wallet.api.dto.WalletDtos.EntryResponse;
 import com.digitalwallet.wallet.api.dto.WalletDtos.StatementResponse;
 import com.digitalwallet.wallet.api.dto.WalletDtos.TopUpRequest;
 import com.digitalwallet.wallet.api.dto.WalletDtos.TopUpResponse;
 import com.digitalwallet.wallet.api.dto.WalletDtos.WalletResponse;
 import com.digitalwallet.wallet.security.CurrentUserProvider;
+import com.digitalwallet.wallet.statement.EntryService;
 import com.digitalwallet.wallet.statement.StatementPage;
 import com.digitalwallet.wallet.statement.StatementService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -46,13 +49,16 @@ public class WalletController {
 
     private final WalletService walletService;
     private final StatementService statementService;
+    private final EntryService entryService;
     private final CurrentUserProvider currentUserProvider;
 
     public WalletController(WalletService walletService,
                             StatementService statementService,
+                            EntryService entryService,
                             CurrentUserProvider currentUserProvider) {
         this.walletService = walletService;
         this.statementService = statementService;
+        this.entryService = entryService;
         this.currentUserProvider = currentUserProvider;
     }
 
@@ -97,6 +103,19 @@ public class WalletController {
                 outcome.replayed());
 
         return ResponseEntity.status(outcome.replayed() ? HttpStatus.OK : HttpStatus.CREATED).body(body);
+    }
+
+    /**
+     * One movement in full: both ledger lines, so the double entry is visible.
+     *
+     * <p>Only entries the caller has a line in can be read, and only the caller's own balance is
+     * included. Anyone else's entry is a 404, the same as one that does not exist.
+     */
+    @GetMapping("/entries/{journalEntryId}")
+    @Operation(summary = "One journal entry, with both sides of the movement")
+    public EntryResponse entry(@PathVariable UUID journalEntryId) {
+        UUID userId = currentUserProvider.requireCurrentUserId();
+        return EntryResponse.from(entryService.entryFor(userId, journalEntryId));
     }
 
     @GetMapping("/statement")

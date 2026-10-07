@@ -213,6 +213,22 @@ class TransferApiIT extends AbstractTransferIntegrationTest {
     }
 
     @Test
+    @DisplayName("a note longer than one statement line is refused, naming the field")
+    void longNoteRejected() throws Exception {
+        String thirtyOne = "x".repeat(31);
+
+        mockMvc.perform(post("/api/transfers")
+                        .with(userToken(UUID.randomUUID()))
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sendBody("alice", 100L, thirtyOne)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.note").value("note must be at most 30 characters"));
+
+        assertTransferCount(0);
+    }
+
+    @Test
     @DisplayName("an amount over the per-transfer ceiling is refused")
     void amountCeilingEnforced() throws Exception {
         stubHandleResolves("alice", UUID.randomUUID());

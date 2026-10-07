@@ -66,6 +66,9 @@ public class SecurityConfig {
                         // Public by design: it is the public half of the signing key.
                         .pathMatchers("/.well-known/jwks.json").permitAll()
                         .pathMatchers("/actuator/health", "/actuator/info").permitAll()
+                        // The API reference. Reading it needs no token; calling what it describes
+                        // still does.
+                        .pathMatchers("/api/docs", "/api/docs/**").permitAll()
 
                         // No route exists to /internal/** anyway, but denying it explicitly means a
                         // route added carelessly later still does not expose it.

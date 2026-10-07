@@ -45,8 +45,11 @@ public final class TransferDtos {
             @Schema(description = "Amount in paise. 50000 means 500.00.", example = "50000")
             Long amountMinor,
 
-            @Size(max = 140)
-            @Schema(description = "Optional note, shown to both sender and recipient", example = "Dinner")
+            // Short enough to sit on one ruled line of a statement, on a phone as on a laptop.
+            // The column holds 140, so notes written before this limit still read back whole.
+            @Size(max = 30, message = "note must be at most 30 characters")
+            @Schema(description = "Optional note, shown to both sender and recipient. At most 30 characters.",
+                    example = "Dinner")
             String note) {
     }
 

@@ -16,6 +16,7 @@ import java.util.UUID;
  * @param memo              the sender's note, the same on both parties' statements; may be null
  */
 public record StatementLine(UUID lineId,
+                            UUID journalEntryId,
                             Instant occurredAt,
                             JournalEntryType type,
                             String description,

@@ -3,10 +3,16 @@ package com.digitalwallet.auth.api;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.digitalwallet.auth.AbstractAuthIntegrationTest;
+import jakarta.servlet.http.Cookie;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -179,6 +185,119 @@ class AuthFlowIT extends AbstractAuthIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.handle").value("dave"))
                 .andExpect(jsonPath("$.roles[0]").value("ROLE_USER"));
+    }
+
+    // ------------------------------------------------------------ refresh cookie
+
+    private static final String COOKIE = "dw_refresh";
+
+    private MvcResult cookieLogin(String email) throws Exception {
+        return mockMvc.perform(post("/api/auth/login")
+                        .header(RefreshTokenCookie.TRANSPORT_HEADER, "cookie")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email":"%s","password":"%s"}
+                                """.formatted(email, PASSWORD)))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    @DisplayName("a cookie-mode login sets an httpOnly, Strict, path-scoped cookie and keeps the "
+            + "refresh token out of the body, where page scripts could read it")
+    void cookieLoginKeepsTheRefreshTokenAwayFromScripts() throws Exception {
+        register("hana", "hana@example.com");
+
+        MvcResult result = cookieLogin("hana@example.com");
+
+        assertThat(result.getResponse().getHeader("Set-Cookie"))
+                .startsWith(COOKIE + "=")
+                .contains("HttpOnly", "Secure", "SameSite=Strict", "Path=/api/auth", "Max-Age=604800");
+        JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
+        assertThat(body.get("accessToken").asText()).isNotBlank();
+        assertThat(body.get("refreshToken").isNull()).isTrue();
+    }
+
+    @Test
+    @DisplayName("a cookie-mode refresh rotates the cookie, and the spent cookie is treated as reuse")
+    void cookieRefreshRotates() throws Exception {
+        register("ivan", "ivan@example.com");
+        Cookie first = cookieLogin("ivan@example.com").getResponse().getCookie(COOKIE);
+
+        MvcResult refreshed = mockMvc.perform(post("/api/auth/refresh")
+                        .header(RefreshTokenCookie.TRANSPORT_HEADER, "cookie")
+                        .cookie(first))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").isNotEmpty())
+                .andReturn();
+        Cookie second = refreshed.getResponse().getCookie(COOKIE);
+        assertThat(second.getValue()).isNotEqualTo(first.getValue());
+
+        mockMvc.perform(post("/api/auth/refresh")
+                        .header(RefreshTokenCookie.TRANSPORT_HEADER, "cookie")
+                        .cookie(first))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("the refresh cookie alone is ignored: without the transport header, a request "
+            + "another site triggers cannot use it")
+    void cookieWithoutTheHeaderIsIgnored() throws Exception {
+        register("jade", "jade@example.com");
+        Cookie cookie = cookieLogin("jade@example.com").getResponse().getCookie(COOKIE);
+
+        mockMvc.perform(post("/api/auth/refresh").cookie(cookie))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.detail").value("A refresh token is required"));
+
+        // Nor did that attempt spend the token: the legitimate client can still use it.
+        mockMvc.perform(post("/api/auth/refresh")
+                        .header(RefreshTokenCookie.TRANSPORT_HEADER, "cookie")
+                        .cookie(cookie))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("a cookie-mode logout revokes the session and deletes the cookie")
+    void cookieLogoutRevokesAndClears() throws Exception {
+        register("kiran", "kiran@example.com");
+        Cookie cookie = cookieLogin("kiran@example.com").getResponse().getCookie(COOKIE);
+
+        mockMvc.perform(post("/api/auth/logout")
+                        .header(RefreshTokenCookie.TRANSPORT_HEADER, "cookie")
+                        .cookie(cookie))
+                .andExpect(status().isNoContent())
+                .andExpect(header().string("Set-Cookie",
+                        allOf(containsString(COOKIE + "="), containsString("Max-Age=0"))));
+
+        mockMvc.perform(post("/api/auth/refresh")
+                        .header(RefreshTokenCookie.TRANSPORT_HEADER, "cookie")
+                        .cookie(cookie))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // --------------------------------------------------------------- admins
+
+    @Test
+    @DisplayName("an address on the configured admin list is promoted at login, whatever its case")
+    void configuredAdminIsPromotedAtLogin() throws Exception {
+        register("boss", "boss@example.com");
+        String accessToken = login("boss@example.com").get("accessToken").asText();
+
+        mockMvc.perform(get("/api/users/me").header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.roles", hasItem("ROLE_ADMIN")))
+                .andExpect(jsonPath("$.roles", hasItem("ROLE_USER")));
+    }
+
+    @Test
+    @DisplayName("an address not on the admin list stays an ordinary user")
+    void unlistedUserIsNotPromoted() throws Exception {
+        register("liam", "liam@example.com");
+        String accessToken = login("liam@example.com").get("accessToken").asText();
+
+        mockMvc.perform(get("/api/users/me").header("Authorization", "Bearer " + accessToken))
+                .andExpect(jsonPath("$.roles", not(hasItem("ROLE_ADMIN"))));
     }
 
     @Test

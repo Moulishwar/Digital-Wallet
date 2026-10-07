@@ -43,6 +43,14 @@
          reactive stack and breaks the gateway outright. The RFC 7807 shape is reproduced here in
          reactive form instead — a small duplication, and the correct side of the trade. -->
 
+    <!-- One Swagger UI at /api/docs for the whole API. The specs themselves come from the
+         services, proxied by the routes in application.yml; the gateway documents nothing of its
+         own. The webflux flavour, for the same reason as above. -->
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>

@@ -1,8 +1,16 @@
 # Build output
 target/
 
+# Local environment
+.env
+.env.*
+!.env.example
+
 # IntelliJ
 .idea/
 *.iml
 
-.env
+# Editors and OS
+.vscode/
+.DS_Store
+*.log

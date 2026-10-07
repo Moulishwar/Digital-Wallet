@@ -48,6 +48,28 @@ spring:
               predicates:
                 - Path=/api/transfers/**
 
+            # Each service's OpenAPI document, under one public prefix for the Swagger UI below.
+            - id: docs-auth
+              uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/api/docs/specs/auth
+              filters:
+                - SetPath=/v3/api-docs
+
+            - id: docs-wallet
+              uri: ${WALLET_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/docs/specs/wallet
+              filters:
+                - SetPath=/v3/api-docs
+
+            - id: docs-transfer
+              uri: ${TRANSFER_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/docs/specs/transfer
+              filters:
+                - SetPath=/v3/api-docs
+
           httpclient:
             connect-timeout: 2000
             # Longer than any downstream read timeout, so a slow service is reported by the
@@ -84,6 +106,25 @@ gateway:
     anonymous:
       capacity: 20
       refill-per-second: 2
+
+# Everything lives under /api/docs, because /api/** is the only prefix the web container forwards
+# here: the UI page, its static assets, and its configuration endpoint.
+springdoc:
+  api-docs:
+    path: /api/docs/config
+  swagger-ui:
+    # springdoc serves the UI beside this path, at /api/docs/swagger-ui/index.html. Plain /api/docs
+    # redirects here (DocsConfig).
+    path: /api/docs/swagger-ui.html
+    # Filled in from the root pom at build time; must match the swagger-ui webjar on the classpath.
+    version: '@swagger-ui.version@'
+    urls:
+      - name: Auth
+        url: /api/docs/specs/auth
+      - name: Wallet
+        url: /api/docs/specs/wallet
+      - name: Transfers
+        url: /api/docs/specs/transfer
 
 management:
   endpoints:

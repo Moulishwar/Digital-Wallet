@@ -43,6 +43,13 @@ security:
     # useless in production — hence it must be switched on deliberately.
     allow-ephemeral-keys: false
 
+  refresh-cookie:
+    secure: ${REFRESH_COOKIE_SECURE:true}
+
+  admins:
+    # Comma-separated. These accounts are promoted to ROLE_ADMIN at their next login.
+    emails: ${ADMIN_EMAILS:}
+
   # Presented to wallet-service on /internal/** calls. No default.
   service-credential: ${SERVICE_CREDENTIAL}
 

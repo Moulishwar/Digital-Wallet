@@ -73,6 +73,11 @@
         <version>${springdoc.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+        <version>${springdoc.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.webjars</groupId>
         <artifactId>swagger-ui</artifactId>
         <version>${swagger-ui.version}</version>

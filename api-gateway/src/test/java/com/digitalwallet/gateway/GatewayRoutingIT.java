@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -265,6 +266,42 @@ class GatewayRoutingIT {
 
         WALLET.verify(0, com.github.tomakehurst.wiremock.client.WireMock
                 .postRequestedFor(urlPathEqualTo("/internal/postings")));
+    }
+
+    // ------------------------------------------------------------------ docs
+
+    @Test
+    @DisplayName("each service's OpenAPI document is reachable under /api/docs/specs without a token")
+    void serviceSpecsAreProxied() {
+        WALLET.stubFor(get(urlPathEqualTo("/v3/api-docs"))
+                .willReturn(okJson("{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"Wallet Service API\"}}")));
+
+        webTestClient.get().uri("/api/docs/specs/wallet")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody().jsonPath("$.info.title").isEqualTo("Wallet Service API");
+
+        WALLET.verify(getRequestedFor(urlPathEqualTo("/v3/api-docs")));
+    }
+
+    @Test
+    @DisplayName("the Swagger UI is served under /api/docs and lists every service")
+    void swaggerUiIsServed() {
+        webTestClient.get().uri("/api/docs/config/swagger-config")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.urls[*].url").value(Matchers.containsInAnyOrder(
+                        "/api/docs/specs/auth", "/api/docs/specs/wallet", "/api/docs/specs/transfer"));
+
+        webTestClient.get().uri("/api/docs")
+                .exchange()
+                .expectStatus().is3xxRedirection()
+                .expectHeader().location("/api/docs/swagger-ui.html");
+
+        webTestClient.get().uri("/api/docs/swagger-ui/index.html")
+                .exchange()
+                .expectStatus().isOk();
     }
 
     @Test

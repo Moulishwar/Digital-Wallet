@@ -1,7 +1,9 @@
 package com.digitalwallet.auth.user;
 
+import com.digitalwallet.auth.config.AdminProperties;
 import com.digitalwallet.common.error.ApiException;
 import com.digitalwallet.common.error.ErrorCode;
+import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +31,13 @@ public class UserService {
 
     private final AppUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Set<String> adminEmails;
 
-    public UserService(AppUserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(AppUserRepository userRepository, PasswordEncoder passwordEncoder,
+                       AdminProperties adminProperties) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.adminEmails = adminProperties.normalizedEmails();
     }
 
     @Transactional
@@ -77,8 +82,12 @@ public class UserService {
      *
      * <p>Every failure — unknown address, wrong password, suspended account — returns the same
      * message. Distinguishing them would tell an attacker which addresses are worth attacking.
+     *
+     * <p>A successful login is also where configured administrators are promoted — see
+     * {@link AdminProperties}. Doing it here rather than at registration means an address can be
+     * added to the list after the account already exists.
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public AppUser authenticate(String email, String rawPassword) {
         AppUser user = userRepository.findByEmail(AppUser.normalizeEmail(email)).orElse(null);
 
@@ -91,6 +100,9 @@ public class UserService {
         }
         if (!user.getStatus().canAuthenticate()) {
             throw invalidCredentials();
+        }
+        if (adminEmails.contains(user.getEmail()) && user.grantRole(Role.ROLE_ADMIN)) {
+            log.info("Granted ROLE_ADMIN to user {} from the configured admin list", user.getId());
         }
         return user;
     }

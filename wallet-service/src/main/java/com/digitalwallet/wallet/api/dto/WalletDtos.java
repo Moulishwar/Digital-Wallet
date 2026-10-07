@@ -3,6 +3,7 @@ package com.digitalwallet.wallet.api.dto;
 import com.digitalwallet.wallet.account.Account;
 import com.digitalwallet.wallet.ledger.JournalEntryType;
 import com.digitalwallet.wallet.ledger.PostingResult;
+import com.digitalwallet.wallet.statement.EntryView;
 import com.digitalwallet.wallet.statement.StatementLine;
 import com.digitalwallet.wallet.statement.StatementPage;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -163,6 +164,9 @@ public final class WalletDtos {
     }
 
     public record StatementLineResponse(UUID lineId,
+                                        @Schema(description = "Open with GET /api/wallets/me/entries/{journalEntryId} "
+                                                + "to see both sides of this movement")
+                                        UUID journalEntryId,
                                         Instant occurredAt,
                                         JournalEntryType type,
                                         String description,
@@ -180,7 +184,7 @@ public final class WalletDtos {
                                         String memo) {
 
         public static StatementLineResponse from(StatementLine line) {
-            return new StatementLineResponse(line.lineId(), line.occurredAt(), line.type(),
+            return new StatementLineResponse(line.lineId(), line.journalEntryId(), line.occurredAt(), line.type(),
                     line.description(), line.amountMinor(), line.balanceAfterMinor(),
                     line.counterpartyHandle(), line.counterpartyName(), line.memo());
         }
@@ -194,6 +198,41 @@ public final class WalletDtos {
         public static StatementResponse from(StatementPage page) {
             return new StatementResponse(page.lines().stream().map(StatementLineResponse::from).toList(),
                     page.nextCursor());
+        }
+    }
+
+    @Schema(description = "One journal entry from the caller's side: every line, but only the caller's balance.")
+    public record EntryResponse(UUID journalEntryId,
+                                JournalEntryType type,
+                                Instant postedAt,
+                                String description,
+                                String memo,
+                                @Schema(description = "The caller's own line first")
+                                List<EntryLineResponse> lines,
+                                @Schema(description = "Signed total of the lines. Always 0: money moved, none created.")
+                                long sumMinor) {
+
+        public static EntryResponse from(EntryView entry) {
+            return new EntryResponse(entry.journalEntryId(), entry.type(), entry.postedAt(),
+                    entry.description(), entry.memo(),
+                    entry.lines().stream().map(EntryLineResponse::from).toList(),
+                    entry.sumMinor());
+        }
+    }
+
+    public record EntryLineResponse(@Schema(description = "Whose line: YOU, COUNTERPARTY, FUNDING or FEES")
+                                    EntryView.Party party,
+                                    @Schema(description = "Set on a COUNTERPARTY line", example = "bob")
+                                    String counterpartyHandle,
+                                    String counterpartyName,
+                                    @Schema(description = "Signed: negative left the account, positive arrived")
+                                    long amountMinor,
+                                    @Schema(description = "Only on your own line. Nobody else's balance is ever shown.")
+                                    Long balanceAfterMinor) {
+
+        public static EntryLineResponse from(EntryView.Line line) {
+            return new EntryLineResponse(line.party(), line.counterpartyHandle(), line.counterpartyName(),
+                    line.amountMinor(), line.balanceAfterMinor());
         }
     }
 

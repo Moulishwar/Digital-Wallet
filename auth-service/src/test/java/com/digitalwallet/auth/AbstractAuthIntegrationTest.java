@@ -38,6 +38,8 @@ public abstract class AbstractAuthIntegrationTest {
         registry.add("wallet.connect-timeout", () -> "200ms");
         registry.add("wallet.read-timeout", () -> "200ms");
         registry.add("security.service-credential", () -> "test-service-credential");
+        // Mixed case and padding on purpose: the list must be matched the way addresses are stored.
+        registry.add("security.admins.emails", () -> " Boss@Example.com ,other-admin@example.com");
     }
 
     @Autowired

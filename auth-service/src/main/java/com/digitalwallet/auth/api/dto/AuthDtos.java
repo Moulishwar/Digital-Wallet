@@ -50,10 +50,12 @@ public final class AuthDtos {
                                @NotBlank String password) {
     }
 
-    public record RefreshRequest(@NotBlank String refreshToken) {
+    /** The token may instead arrive as the refresh cookie; see {@code RefreshTokenCookie}. */
+    public record RefreshRequest(String refreshToken) {
     }
 
-    public record LogoutRequest(@NotBlank String refreshToken) {
+    /** The token may instead arrive as the refresh cookie; see {@code RefreshTokenCookie}. */
+    public record LogoutRequest(String refreshToken) {
     }
 
     // --------------------------------------------------------------- responses
@@ -76,7 +78,9 @@ public final class AuthDtos {
             @Schema(description = "Seconds until the access token expires", example = "900")
             long expiresIn,
 
-            @Schema(description = "Opaque. Single use — refreshing returns a new one and kills this one.")
+            @Schema(description = "Opaque. Single use — refreshing returns a new one and kills this one. "
+                    + "Null when the request sent X-Token-Transport: cookie; the token is then set as "
+                    + "an httpOnly cookie instead.")
             String refreshToken) {
 
         public static TokenResponse of(String accessToken, long expiresIn, String refreshToken) {

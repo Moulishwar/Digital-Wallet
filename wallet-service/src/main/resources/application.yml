@@ -52,6 +52,9 @@ security:
   service-credential: ${SERVICE_CREDENTIAL}
 
 springdoc:
+  # Service-to-service endpoints are unreachable from outside, and the public API reference should
+  # not advertise them either.
+  paths-to-exclude: /internal/**
   swagger-ui:
     path: /swagger-ui.html
     # Filled in from the root pom at build time; must match the swagger-ui webjar on the classpath.

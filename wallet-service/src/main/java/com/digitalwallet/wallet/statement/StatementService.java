@@ -57,6 +57,7 @@ public class StatementService {
         for (LedgerLine row : pageRows) {
             lines.add(new StatementLine(
                     row.getId(),
+                    row.getJournalEntry().getId(),
                     row.getCreatedAt(),
                     row.getJournalEntry().getType(),
                     row.getJournalEntry().getDescription(),

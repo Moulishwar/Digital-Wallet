@@ -96,6 +96,8 @@ services:
       SERVICE_CREDENTIAL: ${SERVICE_CREDENTIAL:?SERVICE_CREDENTIAL must be set in .env}
       JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:?JWT_PRIVATE_KEY must be set in .env}
       JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:?JWT_PUBLIC_KEY must be set in .env}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+      REFRESH_COOKIE_SECURE: ${REFRESH_COOKIE_SECURE:-true}
       THC_PORT: 8081
       THC_PATH: /actuator/health
     healthcheck:
@@ -180,6 +182,24 @@ services:
       timeout: 5s
       retries: 12
       start_period: 40s
+
+  # The app people use. Serves the built UI and forwards /api to the gateway, so the browser sees
+  # a single origin. Built by compose from web/Dockerfile.
+  web:
+    build: ./web
+    image: ${IMAGE_REGISTRY:-digital-wallet}/web:${IMAGE_TAG:-latest}
+    container_name: dw-web
+    profiles: [services]
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-3000}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
 volumes:
   walletdb-data:

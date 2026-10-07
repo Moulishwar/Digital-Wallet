@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.digitalwallet.common.security.ServiceCredential;
 import com.digitalwallet.wallet.AbstractPostgresIntegrationTest;
+import com.jayway.jsonpath.JsonPath;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -359,6 +360,99 @@ class WalletApiIT extends AbstractPostgresIntegrationTest {
                 .andExpect(jsonPath("$.lines[0].counterpartyHandle").value("alice"))
                 .andExpect(jsonPath("$.lines[0].counterpartyName").value("Alice Rao"))
                 .andExpect(jsonPath("$.lines[0].memo").value("Dinner"));
+    }
+
+    // ------------------------------------------------- /api/wallets/me/entries
+
+    private String newestEntryId(UUID userId) throws Exception {
+        String statement = mockMvc.perform(get("/api/wallets/me/statement").with(userToken(userId)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        return JsonPath.read(statement, "$.lines[0].journalEntryId");
+    }
+
+    private void labelledTransfer(String ref, UUID from, UUID to, long amountMinor) throws Exception {
+        mockMvc.perform(post("/internal/postings")
+                        .with(serviceCall())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"externalRef": "%s", "fromOwnerUserId": "%s", "toOwnerUserId": "%s",
+                                 "amountMinor": %d, "description": "Transfer", "memo": "Rent",
+                                 "fromHandle": "alice", "fromName": "Alice Rao",
+                                 "toHandle": "bob", "toName": "Bob Iyer"}
+                                """.formatted(ref, from, to, amountMinor)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("an entry shows both sides of the movement summing to zero, but only the "
+            + "caller's own balance")
+    void entryShowsBothSidesButOnlyYourBalance() throws Exception {
+        UUID alice = provisionUser();
+        UUID bob = provisionUser();
+        topUp(alice, 30000);
+        labelledTransfer("transfer-entry", alice, bob, 5000);
+
+        String entryId = newestEntryId(alice);
+
+        mockMvc.perform(get("/api/wallets/me/entries/" + entryId).with(userToken(alice)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.type").value("TRANSFER"))
+                .andExpect(jsonPath("$.memo").value("Rent"))
+                .andExpect(jsonPath("$.sumMinor").value(0))
+                .andExpect(jsonPath("$.lines", hasSize(2)))
+                .andExpect(jsonPath("$.lines[0].party").value("YOU"))
+                .andExpect(jsonPath("$.lines[0].amountMinor").value(-5000))
+                .andExpect(jsonPath("$.lines[0].balanceAfterMinor").value(25000))
+                .andExpect(jsonPath("$.lines[1].party").value("COUNTERPARTY"))
+                .andExpect(jsonPath("$.lines[1].counterpartyHandle").value("bob"))
+                .andExpect(jsonPath("$.lines[1].counterpartyName").value("Bob Iyer"))
+                .andExpect(jsonPath("$.lines[1].amountMinor").value(5000))
+                // Bob's balance is his business, even though Alice is party to this entry.
+                .andExpect(jsonPath("$.lines[1].balanceAfterMinor", nullValue()));
+
+        // The same entry from Bob's side: his line first, Alice named as the other party.
+        mockMvc.perform(get("/api/wallets/me/entries/" + entryId).with(userToken(bob)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lines[0].party").value("YOU"))
+                .andExpect(jsonPath("$.lines[0].balanceAfterMinor").value(5000))
+                .andExpect(jsonPath("$.lines[1].counterpartyHandle").value("alice"))
+                .andExpect(jsonPath("$.lines[1].balanceAfterMinor", nullValue()));
+    }
+
+    @Test
+    @DisplayName("a top-up's other side is the funding account, not a person")
+    void topUpEntryShowsTheFundingSide() throws Exception {
+        UUID userId = provisionUser();
+        topUp(userId, 7500);
+
+        mockMvc.perform(get("/api/wallets/me/entries/" + newestEntryId(userId)).with(userToken(userId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.type").value("TOPUP"))
+                .andExpect(jsonPath("$.lines[0].amountMinor").value(7500))
+                .andExpect(jsonPath("$.lines[1].party").value("FUNDING"))
+                .andExpect(jsonPath("$.lines[1].amountMinor").value(-7500))
+                .andExpect(jsonPath("$.lines[1].counterpartyHandle", nullValue()))
+                .andExpect(jsonPath("$.lines[1].balanceAfterMinor", nullValue()))
+                .andExpect(jsonPath("$.sumMinor").value(0));
+    }
+
+    @Test
+    @DisplayName("someone else's entry is a 404, indistinguishable from one that does not exist")
+    void anotherUsersEntryIsNotFound() throws Exception {
+        UUID alice = provisionUser();
+        UUID bob = provisionUser();
+        UUID stranger = provisionUser();
+        topUp(alice, 30000);
+        labelledTransfer("transfer-private", alice, bob, 1000);
+
+        mockMvc.perform(get("/api/wallets/me/entries/" + newestEntryId(alice)).with(userToken(stranger)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.detail").value("No such entry"));
+
+        mockMvc.perform(get("/api/wallets/me/entries/" + UUID.randomUUID()).with(userToken(stranger)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.detail").value("No such entry"));
     }
 
     @Test

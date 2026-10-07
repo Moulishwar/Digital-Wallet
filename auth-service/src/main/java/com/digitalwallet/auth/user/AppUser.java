@@ -125,6 +125,11 @@ public class AppUser {
         return status;
     }
 
+    /** @return true if the role was newly granted */
+    public boolean grantRole(Role role) {
+        return roles.add(role);
+    }
+
     public Set<Role> getRoles() {
         return Set.copyOf(roles);
     }

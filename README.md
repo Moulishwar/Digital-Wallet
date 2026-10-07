@@ -114,7 +114,7 @@ Run the services yourself when you want a debugger attached.
 ### Tests
 
 ```bash
-./mvnw verify                # 123 tests: 35 unit, 88 integration against real PostgreSQL
+./mvnw verify                # 134 tests: 35 unit, 99 integration against real PostgreSQL
 ./mvnw -Psecurity-scan verify   # + OWASP dependency-check (slow on first run)
 ```
 
@@ -133,9 +133,10 @@ Docker must be running: the integration tests use Testcontainers, not H2. See
 
 ## Trying it out
 
-Swagger UI is served per service — `http://localhost:8081/swagger-ui.html` and so on. There is also
-a Postman collection at [`postman/digital-wallet.postman_collection.json`](postman/) that walks the
-whole flow and captures the token automatically.
+The API reference for all three services is one Swagger UI at
+[`http://localhost:8080/api/docs`](http://localhost:8080/api/docs). There is also a Postman
+collection at [`postman/digital-wallet.postman_collection.json`](postman/) that walks the whole
+flow and captures the token automatically.
 
 By hand:
 
@@ -242,6 +243,13 @@ payment was refused when it was never even seen.
   compromised wallet-service still cannot mint a token.
 - **Refresh-token rotation with reuse detection.** Tokens are stored hashed (SHA-256), never raw.
   Presenting an already-used token indicates theft, and the whole chain is revoked.
+- **Browsers never hold the refresh token.** A request sending `X-Token-Transport: cookie` gets
+  it as an `HttpOnly; Secure; SameSite=Strict` cookie scoped to `/api/auth`, and an empty field in
+  the body, so no script on the page can read it. The cookie is honoured only alongside that
+  header, which another site cannot add without a CORS preflight the gateway refuses. API clients
+  that omit the header keep receiving it in the body.
+- **The first administrator comes from configuration.** No endpoint grants `ROLE_ADMIN`; accounts
+  listed in `ADMIN_EMAILS` are promoted at their next login.
 - **Issuer is verified, not just the signature.** A signature only proves the token was signed by
   some key in the key set, not that it was minted for this system.
 - **Ownership is always checked against the token subject**, never a request parameter. There is no
