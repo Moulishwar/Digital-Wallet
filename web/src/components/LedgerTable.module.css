@@ -1,0 +1,209 @@
+/*
+ * Ruled paper. Every cell is exactly one ruled line tall, so rows land on the printed rules; a
+ * line with a note runs onto the next rule, as a bookkeeper would write it.
+ */
+
+.ruled {
+  /* How far above the bottom of a line its rule is printed, so writing sits on the rule rather
+     than floating between two. */
+  --rise: 0.4rem;
+
+  flex: 1;
+  position: relative;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(var(--line) - 1px),
+    var(--rule) calc(var(--line) - 1px) var(--line)
+  );
+  background-position: 0 calc(-1 * var(--rise));
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: var(--text-md);
+  line-height: var(--line);
+}
+
+.table th,
+.table td {
+  padding: 0 0.75rem;
+  vertical-align: top;
+  text-align: left;
+}
+
+/* The heading row is ruled off with a double line, drawn as two hairlines so it adds no height
+   and the rows below stay on their rules. */
+.table thead th {
+  /* Raised by the same amount the rule is, so the heading sits above its double line. */
+  line-height: calc(var(--line) - var(--rise));
+  padding-bottom: var(--rise);
+  font-weight: 450;
+  font-style: italic;
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+  background:
+    linear-gradient(var(--ink-muted), var(--ink-muted)) left bottom var(--rise) / 100% 1px no-repeat,
+    linear-gradient(var(--ink-muted), var(--ink-muted)) left bottom calc(var(--rise) + 3px) / 100% 1px
+      no-repeat;
+}
+
+/* The red double margin rule, between the date and the particulars. */
+.date {
+  width: 5.25rem;
+  padding-left: 0.25rem !important;
+  box-shadow:
+    inset -1px 0 0 var(--margin-rule),
+    inset -4px 0 0 var(--paper),
+    inset -5px 0 0 var(--margin-rule);
+}
+
+.table td.date {
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+.particulars {
+  overflow: hidden;
+}
+
+/* Like the note beneath it, the name keeps to its one ruled line, truncating itself so it can
+   never be wider than its column. The full name is in the journal entry. */
+.who,
+.opener {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.who {
+  font-weight: 500;
+}
+
+/* The note sits on the next ruled line, in the hand of the person who wrote it. */
+.memo {
+  display: block;
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--ink-muted);
+  /* Never more than its one ruled line: a note too wide for this screen is clipped here and read
+     in full in its journal entry. */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.amount {
+  width: 7rem;
+  text-align: right !important;
+  white-space: nowrap;
+  box-shadow: inset 1px 0 0 var(--rule);
+}
+
+.out {
+  color: var(--vermilion);
+}
+
+.carried {
+  font-style: italic;
+  font-weight: 450;
+  text-align: right !important;
+}
+
+.carried abbr {
+  text-decoration: none;
+  font-style: normal;
+  font-family: var(--font-figures);
+  font-variation-settings: var(--figures-settings);
+}
+
+/* An accountant's total: double-underlined. */
+.total {
+  font-weight: 600;
+  padding-bottom: 3px;
+  background:
+    linear-gradient(currentColor, currentColor) bottom / 100% 1px no-repeat,
+    linear-gradient(currentColor, currentColor) bottom 3px left / 100% 1px no-repeat;
+}
+
+.empty {
+  position: absolute;
+  top: calc(var(--line) * 2);
+  left: 6.25rem;
+  line-height: var(--line);
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+/* The accountant's view fits three figure columns, one ruled line per entry, in a smaller hand. */
+.book {
+  font-size: var(--text-sm);
+}
+
+.book .amount {
+  width: 6.5rem;
+}
+
+.book .particulars {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+
+
+.table thead abbr {
+  text-decoration: none;
+  font-style: normal;
+  font-family: var(--font-figures);
+}
+
+.running {
+  color: var(--ink-muted);
+}
+
+/* A line that opens its journal entry: the particulars are the button. */
+.opener {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 0.25em;
+  cursor: pointer;
+}
+
+.opener:hover {
+  text-decoration-color: currentColor;
+}
+
+/* The line whose entry is open on the facing page, marked as a reader would with a pencil. */
+.open td {
+  background: color-mix(in srgb, var(--thread) 16%, transparent);
+}
+
+/* Folded onto a phone: a narrower date, one signed amount column. */
+.folded .date {
+  width: 4.1rem;
+  padding-left: 0 !important;
+  white-space: nowrap;
+}
+
+.folded td.date {
+  font-size: var(--text-xs);
+}
+
+.folded .amount {
+  width: 6.75rem;
+  padding-right: 0.25rem;
+}
+
+.folded .particulars {
+  padding-left: 0.6rem;
+}

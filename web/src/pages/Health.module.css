@@ -1,0 +1,64 @@
+.explain {
+  display: grid;
+  gap: 1rem;
+  max-width: 36rem;
+  margin: 0;
+  padding-left: 1.4rem;
+}
+
+.explain li::marker {
+  font-family: var(--font-figures);
+  color: var(--ink-muted);
+}
+
+/* A certificate: double-ruled, with the finding written large. */
+.certificate {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1.75rem;
+  border: 1px solid var(--ink);
+  outline: 1px solid var(--ink);
+  outline-offset: -5px;
+}
+
+.verdictGood,
+.verdictBad {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  padding-bottom: 0.75rem;
+  border-bottom: 3px double var(--ink-muted);
+}
+
+.verdictBad {
+  color: var(--vermilion);
+}
+
+.findings {
+  display: grid;
+  margin: 0;
+}
+
+.findings div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.findings dt {
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+.findings dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.drifted {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: var(--text-sm);
+  color: var(--vermilion);
+}

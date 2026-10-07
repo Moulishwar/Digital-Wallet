@@ -1,0 +1,147 @@
+/* Shared by every page that lives in the book. */
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100%;
+}
+
+.kicker {
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--vermilion);
+}
+
+.title {
+  overflow-wrap: anywhere;
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* The heading written at the top of a right-hand page. */
+.pageHeading {
+  font-size: var(--text-lg);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.bigFigure {
+  font-size: var(--text-xl);
+  font-weight: 600;
+}
+
+.spaced {
+  margin-top: 0.85rem;
+}
+
+/* A right-hand page's heading, with the dates the page covers set against it. */
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.span {
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+}
+
+.lead {
+  max-width: 36rem;
+  color: var(--ink-muted);
+}
+
+.muted {
+  color: var(--ink-muted);
+  font-style: italic;
+}
+
+.form {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 30rem;
+}
+
+/* The steps of a flow, numbered because they are a sequence. */
+.steps {
+  display: flex;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+  counter-reset: step;
+}
+
+.steps li {
+  counter-increment: step;
+}
+
+.steps li::before {
+  content: counter(step) '. ';
+  font-family: var(--font-figures);
+}
+
+.steps li[aria-current='step'] {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.confirm {
+  overflow-wrap: anywhere;
+  padding: 1rem 1.1rem;
+  border-left: 3px solid var(--ink);
+  background: var(--paper-edge);
+}
+
+.confirmName {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.sectionLabel {
+  font-size: var(--text-sm);
+  font-weight: 450;
+  font-style: italic;
+  color: var(--ink-muted);
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.listRow {
+  overflow-wrap: anywhere;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.out {
+  color: var(--vermilion);
+}
+
+.footnote {
+  margin-top: auto;
+  padding-top: 1rem;
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--ink-muted);
+  border-top: 1px solid var(--rule);
+}
+
+.footnote a {
+  color: var(--ink);
+}

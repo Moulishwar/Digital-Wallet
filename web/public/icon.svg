@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- App icon: the bahi's red cloth, its spine, and the gold cord tied across it. Artwork kept
+       inside the central 80% so platforms can mask it to any shape. -->
+  <rect width="512" height="512" fill="#7a181b"/>
+  <rect width="512" height="512" fill="url(#weave)" opacity="0.18"/>
+  <defs>
+    <pattern id="weave" width="6" height="6" patternUnits="userSpaceOnUse">
+      <path d="M0 3h6M3 0v6" stroke="#000" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect x="96" y="0" width="54" height="512" fill="#5a1014"/>
+  <path d="M40 300 C170 268, 300 330, 472 282" stroke="#d9a441" stroke-width="26" fill="none" stroke-linecap="round"/>
+  <path d="M356 302 l-26 112" stroke="#d9a441" stroke-width="16" stroke-linecap="round"/>
+  <path d="M370 302 l20 92" stroke="#d9a441" stroke-width="16" stroke-linecap="round"/>
+  <ellipse cx="362" cy="300" rx="34" ry="28" fill="#d9a441"/>
+  <ellipse cx="352" cy="290" rx="12" ry="9" fill="#f0cf86"/>
+</svg>

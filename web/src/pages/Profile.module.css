@@ -1,0 +1,62 @@
+.details {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.details div {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 1rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.details dt {
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+.details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The QR sits on a pasted-in slip, the same label paper as the cover. */
+.qrCard {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 1.75rem;
+  margin: 0;
+  padding: 1.5rem;
+  border: 1px solid var(--ink);
+  outline: 1px solid var(--ink);
+  outline-offset: -5px;
+}
+
+.qr {
+  width: 13rem;
+  aspect-ratio: 1;
+  background: #f1f2ec;
+}
+
+.qr svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.payMe {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 40rem) {
+  .qrCard {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+}

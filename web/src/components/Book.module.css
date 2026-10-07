@@ -1,0 +1,185 @@
+/*
+ * The open bahi. The desk is the cloth of the cover lying open; the pages sit on it, meeting at a
+ * stitched spine. Ribbon bookmarks hang over the top edge.
+ */
+
+.desk {
+  /* The book fills what the desk leaves, exactly: the ribbons' overhang above it, a margin of
+     cloth below, and nothing that makes the window scroll. */
+  --above: 6rem;
+  --below: 1.25rem;
+
+  min-height: 100dvh;
+  padding: 3.25rem clamp(1rem, 3vw, 3rem) var(--below);
+  background-color: var(--cloth);
+  background-image:
+    repeating-linear-gradient(0deg, rgb(0 0 0 / 0.07) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 4px);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  justify-items: center;
+}
+
+/* ------------------------------------------------------------------------------- ribbons */
+
+.ribbons {
+  position: relative;
+  z-index: 2;
+  width: min(84rem, 100%);
+  display: flex;
+  gap: 0.6rem;
+  /* Hung from the right page's top edge, the way a bookmark leaves a bound book. */
+  padding-left: calc(50% + var(--spine));
+  /* As tall as the longest (current) ribbon, whichever is current, so the book never shifts. */
+  height: 5.5rem;
+  margin-bottom: -2.75rem;
+}
+
+.ribbon {
+  position: relative;
+  display: grid;
+  place-items: start center;
+  width: 6.25rem;
+  height: 4.25rem;
+  padding-top: 0.55rem;
+  background: var(--cloth-deep);
+  color: var(--cloth-text);
+  font-size: var(--text-sm);
+  font-weight: 520;
+  text-decoration: none;
+  /* The swallowtail cut every ribbon bookmark has. */
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+  box-shadow: inset 0 6px 6px -4px rgb(0 0 0 / 0.4);
+  transition: height 220ms var(--ease);
+}
+
+.ribbon:hover {
+  height: 4.75rem;
+}
+
+.ribbon.current {
+  height: 5.5rem;
+  background: var(--thread);
+  color: var(--on-thread);
+  font-weight: 640;
+}
+
+.ribbon:focus-visible {
+  outline-offset: -4px;
+}
+
+/* --------------------------------------------------------------------------------- spread */
+
+.spread {
+  width: min(84rem, 100%);
+  /* 4px for the stacked page edges drawn beneath it. */
+  min-height: min(52rem, calc(100dvh - var(--above) - var(--below) - 4px));
+  display: grid;
+  grid-template-columns: 1fr var(--spine) 1fr;
+  box-shadow:
+    0 2px 0 var(--paper-edge),
+    0 4px 0 var(--paper-edge),
+    0 22px 40px rgb(0 0 0 / 0.35);
+}
+
+.page {
+  position: relative;
+  padding: var(--page-pad);
+  padding-top: calc(var(--page-pad) + 1.5rem);
+  background-color: var(--paper);
+  min-width: 0;
+}
+
+/* Each page curves down into the gutter, so it darkens toward the spine. */
+.left {
+  background-image: linear-gradient(to right, transparent 82%, rgb(0 0 0 / 0.07));
+}
+
+.right {
+  background-image: linear-gradient(to left, transparent 86%, rgb(0 0 0 / 0.07));
+}
+
+.spine {
+  background: var(--cloth-deep);
+  background-image: repeating-linear-gradient(to bottom, transparent 0 0.7rem, var(--thread) 0.7rem 1.35rem);
+  background-size: 2px 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow:
+    inset 6px 0 8px -4px rgb(0 0 0 / 0.5),
+    inset -6px 0 8px -4px rgb(0 0 0 / 0.5);
+}
+
+/* ---------------------------------------------------------------------- folded, on a phone
+ *
+ * The spread folds into a single page: the left page's content first, the right page's after it,
+ * one continuous sheet. The ribbons move to the bottom edge, where a thumb reaches them, and point
+ * upward out of the book.
+ */
+@media (max-width: 60rem) {
+  .desk {
+    padding: 0 0 calc(4.25rem + env(safe-area-inset-bottom));
+    grid-template-rows: 1fr;
+  }
+
+  .spread {
+    width: 100%;
+    min-height: 100dvh;
+    grid-template-columns: 1fr;
+    box-shadow: none;
+  }
+
+  .page {
+    padding: 1.5rem 1.25rem;
+    padding-top: calc(1.5rem + env(safe-area-inset-top));
+  }
+
+  .left,
+  .right {
+    background-image: none;
+  }
+
+  .right {
+    padding-top: 0.5rem;
+  }
+
+  .spine {
+    display: none;
+  }
+
+  .ribbons {
+    position: fixed;
+    inset: auto 0 0 0;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0 0.5rem env(safe-area-inset-bottom);
+    gap: 0.35rem;
+    justify-content: center;
+    align-items: flex-end;
+    background: var(--cloth);
+    box-shadow: 0 -6px 14px rgb(0 0 0 / 0.25);
+  }
+
+  .ribbon {
+    flex: 1;
+    width: auto;
+    max-width: 5.5rem;
+    height: 3.75rem;
+    padding-top: 1.35rem;
+    font-size: var(--text-xs);
+    /* The swallowtail now points up, out of the book. */
+    clip-path: polygon(0 18%, 50% 0, 100% 18%, 100% 100%, 0 100%);
+    transition: none;
+  }
+
+  .ribbon:hover {
+    height: 3.75rem;
+  }
+
+  .ribbon.current {
+    height: 4.25rem;
+    margin-top: -0.5rem;
+    padding-top: 1.85rem;
+  }
+}

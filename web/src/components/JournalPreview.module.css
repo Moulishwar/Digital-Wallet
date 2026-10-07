@@ -1,0 +1,16 @@
+.preview {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.title {
+  font-size: var(--text-md);
+  font-weight: 500;
+  font-style: italic;
+}
+
+.note {
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--ink-muted);
+}

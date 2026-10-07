@@ -1,0 +1,164 @@
+/* --------------------------------------------------------------------------- left page */
+
+.account {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  height: 100%;
+}
+
+.wordmark {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--vermilion);
+  margin-bottom: 1.25rem;
+}
+
+.accountOf {
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+.name {
+  overflow-wrap: anywhere;
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.handle {
+  margin-top: 0.15rem;
+  color: var(--ink-muted);
+}
+
+.balanceLabel {
+  font-size: var(--text-sm);
+  font-weight: 450;
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+.balanceFigure {
+  margin-top: 0.25rem;
+  font-size: var(--text-figure);
+  font-weight: 560;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.rupee {
+  font-size: 0.6em;
+  margin-right: 0.15em;
+  vertical-align: 0.45em;
+  color: var(--ink-muted);
+}
+
+/* The balance is the page's total, and a total is double-underlined. */
+.total {
+  padding-bottom: 0.2em;
+  background:
+    linear-gradient(currentColor, currentColor) bottom / 100% 2px no-repeat,
+    linear-gradient(currentColor, currentColor) bottom 6px left / 100% 2px no-repeat;
+}
+
+.pending {
+  color: var(--rule);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.sandbox {
+  margin-top: -1.25rem;
+  font-size: var(--text-xs);
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+.sectionLabel {
+  font-size: var(--text-sm);
+  font-weight: 450;
+  font-style: italic;
+  color: var(--ink-muted);
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.people ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.person {
+  overflow-wrap: anywhere;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--rule);
+  text-decoration: none;
+}
+
+.person:hover span:first-child {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.personHandle {
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+}
+
+.howItWorks {
+  margin-top: auto;
+  padding-top: 1rem;
+  max-width: 34rem;
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--ink-muted);
+  border-top: 1px solid var(--rule);
+}
+
+.howItWorks a {
+  color: var(--ink);
+  text-underline-offset: 0.2em;
+}
+
+/* -------------------------------------------------------------------------- right page */
+
+.entries {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.entriesHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.entriesTitle {
+  font-size: var(--text-lg);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.pageDate {
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+}
+
+.more {
+  align-self: flex-end;
+  margin-top: 1rem;
+  font-style: italic;
+  text-underline-offset: 0.2em;
+}

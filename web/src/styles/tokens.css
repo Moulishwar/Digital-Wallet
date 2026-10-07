@@ -1,0 +1,84 @@
+/*
+ * Design tokens. The look is a bahi-khata: the red cloth-bound Indian account book, its ruled
+ * paper, and the two inks a bookkeeper writes in — black for money in, vermilion for money out.
+ *
+ * Every text/background pair below meets WCAG AA (4.5:1). Thread gold does not reach that on
+ * paper, so it is used only for decoration and for text on cloth.
+ */
+:root {
+  color-scheme: light dark;
+
+  /* ---------------------------------------------------------------- colour, by day */
+  --paper: #f1f2ec; /* cool ledger paper, deliberately not cream */
+  --paper-edge: #e3e5dc; /* page edges and the gutter shadow */
+  --ink: #1a1c22; /* blue-black writing ink — 15:1 on paper */
+  --ink-muted: #555b64; /* secondary writing — 6.1:1 on paper */
+  --vermilion: #b8321b; /* debits, the second ink — 5.3:1 on paper */
+  --rule: #a9bcc6; /* the printed blue ruling */
+  --margin-rule: #d26a5a; /* the red margin line */
+  --cloth: #7a181b; /* the binding */
+  --cloth-deep: #5a1014; /* binding in shadow, the spine */
+  --cloth-text: #f4ebd9; /* writing on cloth — 9:1 */
+  --thread: #d9a441; /* the gold cord a bahi is tied with — 4.7:1 on cloth */
+  --on-thread: #1a1c22; /* writing on the gold, in both themes */
+  --stamp: #5a3ea6; /* violet rubber-stamp ink, as in any Indian office — 7:1 */
+
+  /* ---------------------------------------------------------------- type */
+  --font-words: 'Literata Variable', Georgia, serif;
+  --font-figures: 'Recursive Variable', ui-monospace, monospace;
+  /* A clerk's hand, held in check: monospaced so columns align, a touch of the casual axis. */
+  --figures-settings: 'MONO' 1, 'CASL' 0.35, 'slnt' 0, 'CRSV' 0;
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.375rem;
+  --text-xl: 1.875rem;
+  --text-figure: clamp(2.5rem, 4.2vw, 3.75rem);
+
+  /* ---------------------------------------------------------------- the page */
+  --line: 2.25rem; /* height of one ruled line; ledger rows sit on it */
+  --page-pad: clamp(1.5rem, 3vw, 3rem);
+  --spine: 1.75rem;
+
+  --focus: 2px solid var(--ink);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* -------------------------------------------------------------------------------------------
+ * By lamplight. The page darkens, the inks lighten, and the red cloth becomes the room.
+ * Declared twice so an explicit choice can override the system setting.
+ * ----------------------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #1f1a19;
+    --paper-edge: #2a2321;
+    --ink: #ece5d8;
+    --ink-muted: #aba196;
+    --vermilion: #ff7b5e;
+    --rule: #4a3d39;
+    --margin-rule: #8a3a30;
+    --cloth: #4e0e11;
+    --cloth-deep: #33080b;
+    --cloth-text: #f4ebd9;
+    --thread: #e2b252;
+    --stamp: #b9a4ff;
+    --focus: 2px solid var(--thread);
+  }
+}
+
+:root[data-theme='dark'] {
+  --stamp: #b9a4ff;
+  --paper: #1f1a19;
+  --paper-edge: #2a2321;
+  --ink: #ece5d8;
+  --ink-muted: #aba196;
+  --vermilion: #ff7b5e;
+  --rule: #4a3d39;
+  --margin-rule: #8a3a30;
+  --cloth: #4e0e11;
+  --cloth-deep: #33080b;
+  --cloth-text: #f4ebd9;
+  --thread: #e2b252;
+  --focus: 2px solid var(--thread);
+}

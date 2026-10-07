@@ -1,0 +1,69 @@
+/* The arithmetic, set out the way a bookkeeper works a sum down the page. */
+
+.sum {
+  width: min(100%, 26rem);
+  border-collapse: collapse;
+  font-size: var(--text-md);
+}
+
+.sum th,
+.sum td {
+  padding: 0.45rem 0;
+  text-align: left;
+  font-weight: 450;
+}
+
+.sum td {
+  text-align: right;
+}
+
+.sum abbr {
+  text-decoration: none;
+  font-family: var(--font-figures);
+  color: var(--ink-muted);
+}
+
+.sum tfoot th,
+.sum tfoot td {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--ink);
+  font-weight: 600;
+}
+
+.total {
+  padding-bottom: 3px;
+  background:
+    linear-gradient(currentColor, currentColor) bottom / 100% 1px no-repeat,
+    linear-gradient(currentColor, currentColor) bottom 3px left / 100% 1px no-repeat;
+}
+
+.checks {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pass,
+.fail {
+  padding: 0.5rem 0.8rem;
+  border-left: 3px solid var(--ink);
+  background: var(--paper-edge);
+  font-size: var(--text-sm);
+}
+
+.pass::before {
+  content: '✓ ';
+  font-weight: 700;
+}
+
+.fail {
+  border-color: var(--vermilion);
+  color: var(--vermilion);
+}
+
+.fail::before {
+  content: '✗ ';
+  font-weight: 700;
+}

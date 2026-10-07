@@ -1,0 +1,11 @@
+.notice {
+  position: fixed;
+  z-index: 20;
+  inset: 0 0 auto 0;
+  padding: calc(0.5rem + env(safe-area-inset-top)) 1rem 0.5rem;
+  background: var(--thread);
+  color: var(--on-thread);
+  font-size: var(--text-sm);
+  font-weight: 560;
+  text-align: center;
+}

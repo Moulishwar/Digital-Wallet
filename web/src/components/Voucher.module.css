@@ -1,0 +1,219 @@
+/* A printed voucher slip: ruled blanks, a figures box, and room for a stamp. */
+
+.voucher {
+  position: relative;
+  margin: 0;
+  padding: 1.5rem 1.75rem 1.75rem;
+  border: 1px solid var(--ink);
+  outline: 1px solid var(--ink);
+  outline-offset: -5px;
+  background: repeating-linear-gradient(-45deg, transparent 0 9px, rgb(0 0 0 / 0.018) 9px 10px), var(--paper);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 3px double var(--ink-muted);
+}
+
+.title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.meta {
+  display: flex;
+  gap: 1.25rem;
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.meta div {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.meta dt {
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+.meta dd {
+  margin: 0;
+}
+
+.blanks {
+  margin: 1.25rem 0 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.blank {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.blank dt {
+  font-style: italic;
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+/* What has been filled in sits on a dotted blank, as on a printed form. */
+.blank dd {
+  margin: 0;
+  min-height: 1.9rem;
+  padding-bottom: 0.15rem;
+  border-bottom: 1.5px dotted var(--ink-muted);
+  font-size: var(--text-md);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.words {
+  font-style: italic;
+}
+
+.empty {
+  display: inline-block;
+}
+
+.foot {
+  margin-top: 1.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.figures {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  min-width: 11rem;
+  padding: 0.5rem 0.85rem;
+  border: 1.5px solid var(--ink);
+  font-size: var(--text-xl);
+  font-weight: 600;
+}
+
+.rupee {
+  font-size: var(--text-lg);
+  color: var(--ink-muted);
+}
+
+.signature {
+  display: grid;
+  justify-items: center;
+  min-width: 8.5rem;
+}
+
+/* The signature is the sender's handle, in the casual end of the same typeface. */
+.sign {
+  font-variation-settings:
+    'MONO' 0,
+    'CASL' 1,
+    'slnt' -12,
+    'CRSV' 1;
+  font-size: var(--text-lg);
+  min-height: 2rem;
+}
+
+.signLabel {
+  width: 100%;
+  text-align: center;
+  padding-top: 0.2rem;
+  border-top: 1px solid var(--ink-muted);
+  font-size: var(--text-xs);
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+/* The seal space between the figures and the signature: where the clerk stamps. The stamp is
+   centred on it and may spill over its edges a little, as a real impression does. */
+.seal {
+  flex: 1;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  min-width: 6rem;
+  pointer-events: none;
+}
+
+/* A refused voucher is voided, not stamped: a still band, because nothing happened. */
+.void {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent 0 22px,
+    color-mix(in srgb, var(--vermilion) 7%, transparent) 22px 24px
+  );
+}
+
+.voidBand {
+  padding: 0.35rem 1.75rem;
+  rotate: -12deg;
+  border-block: 2px solid var(--vermilion);
+  background: var(--paper);
+  color: var(--vermilion);
+  font-family: var(--font-figures);
+  font-variation-settings:
+    'MONO' 1,
+    'wght' 750;
+  font-size: var(--text-lg);
+  letter-spacing: 0.2em;
+}
+
+/* Folded onto a phone: the slip reflows rather than overflowing the page. */
+@media (max-width: 60rem) {
+  .voucher {
+    padding: 1.1rem 1.1rem 1.25rem;
+  }
+
+  .head {
+    flex-wrap: wrap;
+  }
+
+  .meta {
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+  }
+
+  .blank {
+    grid-template-columns: 4.75rem 1fr;
+    gap: 0.5rem;
+  }
+
+  .foot {
+    flex-wrap: wrap;
+  }
+
+  .figures {
+    min-width: 0;
+    flex: 1 1 10rem;
+  }
+
+  .signature {
+    min-width: 0;
+    flex: 1 1 8rem;
+  }
+
+  .seal {
+    order: 3;
+    flex-basis: 100%;
+    min-height: 0;
+  }
+
+  .seal:empty {
+    display: none;
+  }
+}
