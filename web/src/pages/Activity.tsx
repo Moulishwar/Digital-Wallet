@@ -84,7 +84,7 @@ export function Activity() {
 
   return (
     <>
-      <Book label="Activity" left={left} right={right} />
+      <Book label="Activity" left={left} right={right} paged />
       {folded && (
         <Sheet open={openEntry !== null} onClose={closeEntry} title="Journal entry">
           {openEntry && <EntryCard journalEntryId={openEntry} />}

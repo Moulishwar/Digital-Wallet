@@ -17,6 +17,9 @@ body {
   margin: 0;
   min-height: 100dvh;
   line-height: 1.5;
+  /* Names, handles and notes are whatever people typed. A word too long for its line breaks
+     rather than pushing the page wider than the screen. */
+  overflow-wrap: break-word;
 }
 
 h1,

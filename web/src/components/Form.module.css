@@ -1,5 +1,6 @@
 .field {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.15rem;
 }
 
@@ -22,7 +23,10 @@
 }
 
 .line input {
+  /* Takes the line's width rather than its own: an input's built-in width, at the large size,
+     is wider than a phone. */
   flex: 1;
+  width: 0;
   min-width: 0;
   padding: 0.35rem 0;
   border: 0;

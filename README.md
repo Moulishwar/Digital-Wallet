@@ -121,6 +121,14 @@ Run the services yourself when you want a debugger attached.
 Docker must be running: the integration tests use Testcontainers, not H2. See
 [Troubleshooting](#troubleshooting) if Testcontainers cannot find your daemon.
 
+The web app has its own:
+
+```bash
+cd web
+npm test                     # 59 unit and component tests (Vitest)
+npm run e2e                  # 99 browser tests against the running stack; see web/e2e/README.md
+```
+
 ### Troubleshooting
 
 - **`permission denied while trying to connect to the docker API`** (Linux): your user is not in
@@ -277,6 +285,8 @@ payment was refused when it was never even seen.
 | Integration | Testcontainers, real PostgreSQL 16 | Repositories, Flyway migrations, transaction boundaries, the immutability trigger |
 | Inter-service | WireMock | transfer-service against a stubbed wallet-service, including 5xx and genuine socket timeouts |
 | Concurrency | JUnit + `ExecutorService` | The overdraft, deadlock and idempotency tests below |
+| Web unit | Vitest + Testing Library | Paise formatting and parsing, cheque words, page arithmetic, the token-refresh rules |
+| End-to-end | Playwright + axe-core | The real stack in Chromium (desktop, Android) and WebKit (iPhone): every flow, WCAG 2.2 AA on every screen in both themes, and layout measured against hostile names and notes |
 
 Not H2. This ledger depends on behaviour an in-memory database either fakes or lacks outright —
 `SELECT ... FOR UPDATE` semantics, partial unique indexes, and the PL/pgSQL trigger that makes lines

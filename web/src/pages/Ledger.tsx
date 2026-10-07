@@ -1,9 +1,9 @@
 import { useStatementPage, useWallet } from '../api/queries';
-import type { StatementLine } from '../api/types';
 import { Book } from '../components/Book';
 import { LedgerTable } from '../components/LedgerTable';
 import { PageTurner } from '../components/PageTurner';
 import { pageSpan } from '../lib/entries';
+import { pageTotals, type PageTotals } from '../lib/ledger';
 import { formatAmount, formatRupees } from '../lib/money';
 import { usePageSize } from '../lib/usePageSize';
 import { usePageTurns } from '../lib/usePageTurns';
@@ -49,39 +49,13 @@ export function Ledger() {
   );
 
   return (
-    <Book label="Ledger" left={<Proof totals={totals} latest={turns.cursor === null} />} right={right} />
+    <Book
+      label="Ledger"
+      paged
+      left={<Proof totals={totals} latest={turns.cursor === null} />}
+      right={right}
+    />
   );
-}
-
-interface Totals {
-  lineCount: number;
-  broughtForward: number;
-  credits: number;
-  debits: number;
-  /** b/f + Cr − Dr, worked here. */
-  worked: number;
-  /** The balance the server wrote on the page's last line. */
-  carriedForward: number;
-}
-
-/** The page's arithmetic, from its lines in the order they were written. */
-function pageTotals(lines: StatementLine[]): Totals | null {
-  if (lines.length === 0) {
-    return null;
-  }
-  const first = lines[0];
-  const last = lines[lines.length - 1];
-  const broughtForward = first.balanceAfterMinor - first.amountMinor;
-  const credits = lines.filter((l) => l.amountMinor > 0).reduce((sum, l) => sum + l.amountMinor, 0);
-  const debits = lines.filter((l) => l.amountMinor < 0).reduce((sum, l) => sum - l.amountMinor, 0);
-  return {
-    lineCount: lines.length,
-    broughtForward,
-    credits,
-    debits,
-    worked: broughtForward + credits - debits,
-    carriedForward: last.balanceAfterMinor,
-  };
 }
 
 /**
@@ -89,7 +63,7 @@ function pageTotals(lines: StatementLine[]): Totals | null {
  * here from the lines on the page; the last one is then checked against the balance the server
  * reports. If they ever disagreed, this page would say so.
  */
-function Proof({ totals, latest }: { totals: Totals | null; latest: boolean }) {
+function Proof({ totals, latest }: { totals: PageTotals | null; latest: boolean }) {
   const wallet = useWallet();
 
   const header = (

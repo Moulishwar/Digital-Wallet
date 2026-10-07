@@ -111,6 +111,7 @@
   display: grid;
   justify-items: center;
   min-width: 8.5rem;
+  max-width: 100%;
 }
 
 /* The signature is the sender's handle, in the casual end of the same typeface. */
@@ -122,6 +123,10 @@
     'CRSV' 1;
   font-size: var(--text-lg);
   min-height: 2rem;
+  max-width: 100%;
+  text-align: center;
+  /* A handle can be 32 characters with no break in it. */
+  overflow-wrap: anywhere;
 }
 
 .signLabel {

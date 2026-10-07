@@ -90,6 +90,16 @@
   min-width: 0;
 }
 
+/* Exactly the window's height, never taller; see Book. */
+.paged {
+  height: min(52rem, calc(100dvh - var(--above) - var(--below) - 4px));
+}
+
+.paged .page {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 /* Each page curves down into the gutter, so it darkens toward the spine. */
 .left {
   background-image: linear-gradient(to right, transparent 82%, rgb(0 0 0 / 0.07));
@@ -122,14 +132,18 @@
     grid-template-rows: 1fr;
   }
 
-  .spread {
+  .spread,
+  .paged {
     width: 100%;
+    height: auto;
     min-height: 100dvh;
     grid-template-columns: 1fr;
     box-shadow: none;
   }
 
-  .page {
+  .page,
+  .paged .page {
+    overflow-y: visible;
     padding: 1.5rem 1.25rem;
     padding-top: calc(1.5rem + env(safe-area-inset-top));
   }

@@ -25,7 +25,21 @@ export function usePageSize(linesPerEntry: number, reservedLines = 0): number {
     return linesPerEntry === 1 ? 15 : 10;
   }
 
-  const rem = rootFontSize();
+  return entriesPerPage(height, rootFontSize(), linesPerEntry, reservedLines);
+}
+
+/**
+ * The arithmetic behind {@link usePageSize}, for an unfolded book: the ruled lines that fit
+ * beneath the page's fixed furniture, shared out between entries. Never fewer than 3 entries, so a
+ * squat window still turns pages usefully, and never more than 20, so a tall one does not ask
+ * the API for an unreasonably long page.
+ */
+export function entriesPerPage(
+  height: number,
+  rem: number,
+  linesPerEntry: number,
+  reservedLines = 0,
+): number {
   const line = 2.25 * rem;
   // Everything on a page that is not ruled lines: the desk above and below the book, the page's
   // padding, its heading, the table's own heading row, and the page-turning buttons.

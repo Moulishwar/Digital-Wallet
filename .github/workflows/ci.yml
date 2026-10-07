@@ -97,11 +97,111 @@ jobs:
           path: target/dependency-check-report.*
           retention-days: 30
 
+  web:
+    name: Web app
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - name: Unit tests
+        run: npm test
+      # Type-checks the app, its tests and the end-to-end suite, then bundles.
+      - run: npm run build
+
+  e2e:
+    name: End-to-end (desktop, iPhone, Android)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: maven
+
+      - name: Build the service images
+        run: |
+          ./mvnw -B -DskipTests install -pl platform-common -am
+          ./mvnw -B -DskipTests spring-boot:build-image \
+            -pl auth-service,wallet-service,transfer-service,api-gateway
+
+      # A fresh set of secrets for this run alone, made the way the README describes.
+      - name: Write a throwaway environment
+        run: |
+          set -euo pipefail
+          cp .env.example .env
+          put() { sed -i "s|^$1=.*|$1=$2|" .env; }
+          KEYS=$(mktemp -d)
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -outform DER -out "$KEYS/priv.der"
+          openssl pkcs8 -topk8 -nocrypt -inform DER -in "$KEYS/priv.der" -outform DER -out "$KEYS/priv_pkcs8.der"
+          openssl rsa -in "$KEYS/priv.der" -inform DER -pubout -outform DER -out "$KEYS/pub.der"
+          put JWT_PRIVATE_KEY "$(base64 -w0 "$KEYS/priv_pkcs8.der")"
+          put JWT_PUBLIC_KEY "$(base64 -w0 "$KEYS/pub.der")"
+          for KEY in WALLET_DB_PASSWORD AUTH_DB_PASSWORD TRANSFER_DB_PASSWORD SERVICE_CREDENTIAL; do
+            put "$KEY" "$(openssl rand -hex 24)"
+          done
+
+      - name: Start the stack
+        run: docker compose -f docker-compose.yml -f web/e2e/compose.e2e.yml --profile services up -d --build --wait
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies and browsers
+        working-directory: web
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium webkit
+
+      - name: Run the end-to-end tests
+        working-directory: web
+        run: npm run e2e
+
+      - name: Upload the Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: web/playwright-report
+          retention-days: 14
+
+      - name: Service logs
+        if: failure()
+        run: docker compose --profile services logs --no-color --timestamps > compose-logs.txt
+
+      - name: Upload the service logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: compose-logs
+          path: compose-logs.txt
+          retention-days: 14
+
   publish-images:
     name: Publish images
-    # Only from main, and only once the tests and the scan have both passed. An image that was
-    # never proven green is worse than no image, because it looks trustworthy.
-    needs: [build, security-scan]
+    # Only from main, and only once every test and the scan have passed. An image that was never
+    # proven green is worse than no image, because it looks trustworthy.
+    needs: [build, security-scan, web, e2e]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
