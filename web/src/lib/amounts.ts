@@ -76,7 +76,7 @@ function indianWords(n: number): string {
     .join(' ');
 }
 
-/** 45050 → "Rupees Four Hundred Fifty and Paise Fifty Only" — written as on a cheque. */
+/** 45050 → "Rupees Four Hundred Fifty and Paise Fifty Only", written as on a cheque. */
 export function amountInWords(minor: number): string {
   const rupees = Math.trunc(Math.abs(minor) / 100);
   const paise = Math.abs(minor) % 100;

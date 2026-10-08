@@ -10,7 +10,7 @@ const rootFontSize = () => parseFloat(getComputedStyle(document.documentElement)
 
 /**
  * How many entries a page of the book holds, worked out from the window so that a page always
- * fits without the window scrolling — a tall monitor gets a fuller page, a small laptop a shorter
+ * fits without the window scrolling: a tall monitor gets a fuller page, a small laptop a shorter
  * one. On a phone the folded page scrolls anyway, so it simply holds a comfortable number.
  *
  * @param linesPerEntry the ruled lines one entry can take: two in Activity (a line and its note),

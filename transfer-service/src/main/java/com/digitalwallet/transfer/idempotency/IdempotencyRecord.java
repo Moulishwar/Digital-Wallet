@@ -15,7 +15,7 @@ import org.hibernate.type.SqlTypes;
  * <p>The row is written in two steps. It is <em>claimed</em> before any work happens, which is what
  * makes concurrent duplicates race at the unique index instead of both going through; and it is
  * <em>answered</em> once the outcome is known. Between those two points {@code responseStatus} is
- * null, and that gap is a genuine state — another request holding the same key is still in flight.
+ * null, and that gap is a genuine state: another request holding the same key is still in flight.
  *
  * <p>The request hash is stored so that reusing a key with a <em>different</em> body can be
  * reported rather than silently answered with someone else's result. That is nearly always a client

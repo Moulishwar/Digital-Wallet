@@ -42,7 +42,7 @@ public class LedgerPostingService {
      *   <li><b>Replay check.</b> If this {@code externalRef} was already posted, return it
      *       untouched. A caller retrying after a timeout gets the original outcome, not a second
      *       movement of money.</li>
-     *   <li><b>Lock every account at once, in id order.</b> Deadlock avoidance — see
+     *   <li><b>Lock every account at once, in id order.</b> Deadlock avoidance; see
      *       {@link AccountRepository#lockAllByIdInOrder}.</li>
      *   <li><b>Apply the legs.</b> Each one runs the account's own rules, including the overdraft
      *       check, while the row is held.</li>
@@ -55,7 +55,7 @@ public class LedgerPostingService {
      *
      * <p>If a concurrent caller commits the same {@code externalRef} first, the unique constraint
      * rejects this transaction. That surfaces as a {@code DataIntegrityViolationException} and is
-     * resolved by the caller re-reading — see {@code WalletService.topUp}.
+     * resolved by the caller re-reading; see {@code WalletService.topUp}.
      */
     @Transactional
     public PostingResult post(PostingCommand command) {

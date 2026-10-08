@@ -26,7 +26,7 @@
 }
 
 /* The cord runs across the whole cover, behind the plate, and ties off in a knot whose two ends
-   hang loose — the way a bahi is closed. */
+   hang loose, the way a bahi is closed. */
 .tie {
   position: absolute;
   inset: 50% 0 auto 0;

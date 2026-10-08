@@ -34,7 +34,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
  * The rate limiter, with deliberately tiny allowances so the boundary is reachable in a test.
  *
  * <p>The case that matters most is the last one. Keying the limit by IP alone would mean two users
- * behind the same address — an office, a mobile carrier, any NAT — share one allowance, so one busy
+ * behind the same address (an office, a mobile carrier, any NAT) share one allowance, so one busy
  * client silently throttles strangers. Keying authenticated traffic by token subject is what stops
  * that, and it is invisible unless something checks.
  */

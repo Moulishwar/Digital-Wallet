@@ -15,9 +15,9 @@ public interface LedgerLineRepository extends JpaRepository<LedgerLine, UUID> {
      *
      * <p>Paging is keyset-based rather than offset-based. With {@code OFFSET}, a row inserted
      * while the user is paging shifts everything down, so an entry can be shown twice or skipped
-     * entirely — on a bank statement that reads as a duplicated or vanished transaction. Ordering
-     * by {@code (created_at, id)} and asking for "everything strictly after this row" is stable
-     * regardless of concurrent inserts, and it uses the index instead of counting past rows.
+     * entirely, and on a bank statement that reads as a duplicated or vanished transaction.
+     * Ordering by {@code (created_at, id)} and asking for "everything strictly after this row" is
+     * stable regardless of concurrent inserts, and it uses the index instead of counting past rows.
      */
     @Query("""
             select l from LedgerLine l
@@ -30,8 +30,8 @@ public interface LedgerLineRepository extends JpaRepository<LedgerLine, UUID> {
     /**
      * The page following the row identified by the cursor.
      *
-     * <p>{@code createdAt} alone is not unique — two lines of the same entry are written in the
-     * same instant — so the id is the tiebreaker that makes the ordering total.
+     * <p>{@code createdAt} alone is not unique (two lines of the same entry are written in the
+     * same instant), so the id is the tiebreaker that makes the ordering total.
      */
     @Query("""
             select l from LedgerLine l

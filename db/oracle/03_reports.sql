@@ -1,12 +1,12 @@
 -- =============================================================================================
---  Digital Wallet — analytical queries, Oracle dialect
+--  Digital Wallet: analytical queries, Oracle dialect
 -- =============================================================================================
 --
 --  Run 01_schema.sql and 02_seed.sql first. Every expected result below is against that seed,
 --  which is deterministic, so these are checkable rather than decorative.
 --
 --  A note on what is absent: there are no names here, only owner_user_id. Names live in
---  auth-service's database, and nothing in this system can join across that boundary — no shared
+--  auth-service's database, and nothing in this system can join across that boundary: no shared
 --  tables, no cross-database queries. That constraint is the architecture
 --  showing through into the reporting layer, not an oversight. A real reporting stack would
 --  resolve those ids through the API or a warehouse that both services feed.
@@ -56,7 +56,7 @@ ORDER BY a.owner_user_id, month;
 --  without recomputing history. This rebuilds it independently from the amounts alone and compares.
 --
 --  The ORDER BY inside the window must match the order the lines were actually applied in, which
---  is why (created_at, id) is used rather than created_at alone — two lines of the same entry share
+--  is why (created_at, id) is used rather than created_at alone: two lines of the same entry share
 --  a timestamp, and an ambiguous ordering would produce a "mismatch" that is really just a tie
 --  broken differently.
 -- ---------------------------------------------------------------------------------------------
@@ -123,11 +123,11 @@ FETCH FIRST 10 ROWS ONLY;
 
 
 -- ---------------------------------------------------------------------------------------------
---  4. Reconciliation — the cached balance against the ledger it summarises
+--  4. Reconciliation: the cached balance against the ledger it summarises
 -- ---------------------------------------------------------------------------------------------
 --  account.balance_minor is a materialized cache of the sum of an account's ledger lines, kept up
 --  to date inside the same transaction as the posting. The ledger stays the source of truth. This
---  is the query that proves the cache has not drifted from it — the same assertion the running
+--  is the query that proves the cache has not drifted from it, the same assertion the running
 --  system exposes at GET /api/admin/reconciliation.
 --
 --  A LEFT JOIN, not an inner one: an account with no lines at all still has a balance to check,
@@ -154,7 +154,7 @@ ORDER BY a.type, a.owner_user_id;
 --  The invariant the whole design rests on: every journal entry's lines sum to exactly zero. A
 --  non-zero entry means money was created or destroyed by that posting.
 --
---  PostgreSQL cannot express this as a simple CHECK — the constraint spans rows — so the running
+--  PostgreSQL cannot express this as a simple CHECK (the constraint spans rows), so the running
 --  system enforces it in the service layer and verifies it with a test. This is the standing audit
 --  that would catch it if something ever wrote around that layer.
 -- ---------------------------------------------------------------------------------------------
@@ -210,7 +210,7 @@ WHEN NOT MATCHED THEN
 
 COMMIT;
 
--- The rollup must agree with the ledger it was built from. If it does not, the rollup is wrong —
+-- The rollup must agree with the ledger it was built from. If it does not, the rollup is wrong;
 -- the ledger is never wrong by definition, because it is the record.
 SELECT (SELECT SUM(net_minor) FROM daily_account_rollup)  AS rollup_total,
        (SELECT SUM(amount_minor) FROM ledger_line)        AS ledger_total,

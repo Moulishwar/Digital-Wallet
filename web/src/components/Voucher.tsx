@@ -19,7 +19,7 @@ interface Props {
 }
 
 /**
- * A printed payment voucher whose blanks fill in as the form on the facing page is completed —
+ * A printed payment voucher whose blanks fill in as the form on the facing page is completed:
  * figures, the amount in words as on a cheque, and finally the stamp.
  */
 export function Voucher({

@@ -140,7 +140,7 @@ Run the services yourself when you want a debugger attached.
 ### Tests
 
 ```bash
-./mvnw verify                # 141 tests: 41 unit, 100 integration against real PostgreSQL
+./mvnw verify                # 142 tests: 41 unit, 101 integration against real PostgreSQL
 ./mvnw -Psecurity-scan verify   # + OWASP dependency-check (slow on first run)
 ```
 

@@ -16,10 +16,10 @@ import page from './Page.module.css';
 
 type Step = 'who' | 'amount' | 'review' | 'done';
 
-/** One ruled line of a statement — mirrors transfer-service's limit on a note. */
+/** One ruled line of a statement; mirrors transfer-service's limit on a note. */
 const NOTE_LIMIT = 30;
 
-/** The most one payment may move — mirrors transfer-service's ceiling. */
+/** The most one payment may move; mirrors transfer-service's ceiling. */
 const PER_PAYMENT_LIMIT = 10_000_000;
 
 const STEPS: { id: Exclude<Step, 'done'>; label: string }[] = [
@@ -409,7 +409,7 @@ function ReviewStep({
       )}
 
       <div className={formStyles.actions}>
-        {/* A refusal is final for this key — retrying replays the same answer — so the way on is
+        {/* A refusal is final for this key (retrying replays the same answer), so the way on is
             to change the payment, which makes a new one. */}
         <button
           type="button"

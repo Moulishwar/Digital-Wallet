@@ -12,7 +12,7 @@ import { formatRupees } from '../lib/money';
 import formStyles from '../components/Form.module.css';
 import page from './Page.module.css';
 
-/** The most one top-up may add — mirrors wallet-service's ceiling. */
+/** The most one top-up may add; mirrors wallet-service's ceiling. */
 const PER_TOP_UP_LIMIT = 10_000_000;
 const PRESETS = [50_000, 100_000, 500_000, 1_000_000];
 

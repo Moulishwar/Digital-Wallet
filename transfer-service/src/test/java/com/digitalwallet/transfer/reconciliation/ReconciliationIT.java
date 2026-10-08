@@ -27,7 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * What happens when wallet-service stops answering mid-transfer.
  *
  * <p>This is the design's one genuinely distributed problem. The posting may or may not have
- * committed, and there is no way to tell from here — so the transfer is recorded as unresolved and
+ * committed, and there is no way to tell from here, so the transfer is recorded as unresolved and
  * the client is told 202 rather than being given a guess dressed up as an answer.
  *
  * <p>The sweep then settles it by asking wallet-service whether a posting with this transfer's id
@@ -175,7 +175,7 @@ class ReconciliationIT extends AbstractTransferIntegrationTest {
         UUID transferId = transferWithUnknownOutcome(sender);
 
         // No stubs: every request gets a bare 404 with no Problem Detail. That is what a mistyped
-        // route or a proxy answering for an absent service looks like — an error about our
+        // route or a proxy answering for an absent service looks like: an error about our
         // plumbing, not a refusal of the payment. Reading it as a rejection would permanently fail
         // a transfer that was never actually refused, and tell the sender so.
         //

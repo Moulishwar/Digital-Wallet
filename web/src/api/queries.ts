@@ -30,7 +30,7 @@ export function useWallet() {
   return useQuery({ queryKey: keys.wallet, queryFn: () => api<Wallet>('/api/wallets/me') });
 }
 
-/** The newest lines of the statement — the home page's view of the book. */
+/** The newest lines of the statement: the home page's view of the book. */
 export function useRecentLines(size: number) {
   return useQuery({
     queryKey: [...keys.statement, 'recent', size],
@@ -61,7 +61,7 @@ export function useEntry(journalEntryId: string | null) {
   });
 }
 
-/** Payments this user has sent — including the ones that failed or are still settling. */
+/** Payments this user has sent, including the ones that failed or are still settling. */
 export function useSentTransfers(size: number) {
   return useQuery({
     queryKey: [...keys.transfers, size],

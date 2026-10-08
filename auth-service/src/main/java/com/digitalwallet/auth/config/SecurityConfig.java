@@ -21,7 +21,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     /**
-     * BCrypt at cost 12 — roughly 250ms per hash on current hardware.
+     * BCrypt at cost 12: roughly 250ms per hash on current hardware.
      *
      * <p>Slow on purpose. The work factor is what makes an offline attack against a stolen password
      * table expensive, and it is the one security parameter here that should be raised over time as
@@ -39,7 +39,7 @@ public class SecurityConfig {
                 // No CSRF tokens, and that is correct here rather than a shortcut. CSRF exists
                 // because browsers attach cookies automatically. Everything except the token
                 // endpoints is authenticated by an Authorization header a browser never sends on
-                // its own. The one cookie there is — the refresh cookie — is SameSite=Strict, and
+                // its own. The one cookie there is, the refresh cookie, is SameSite=Strict, and
                 // is honoured only on requests carrying a custom header another site cannot add
                 // without a CORS preflight (see RefreshTokenCookie).
                 .csrf(csrf -> csrf.disable())
@@ -77,7 +77,7 @@ public class SecurityConfig {
      * Reads authorities from the {@code roles} claim.
      *
      * <p>The values already carry the {@code ROLE_} prefix, so the converter's default prefix is
-     * cleared — otherwise Spring would look for {@code ROLE_ROLE_ADMIN} and every role check would
+     * cleared; otherwise Spring would look for {@code ROLE_ROLE_ADMIN} and every role check would
      * silently fail.
      */
     private JwtAuthenticationConverter jwtAuthenticationConverter() {

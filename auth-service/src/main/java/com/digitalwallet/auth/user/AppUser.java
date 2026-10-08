@@ -80,7 +80,7 @@ public class AppUser {
     }
 
     /**
-     * @param passwordHash already hashed — this constructor never sees a plaintext password, so
+     * @param passwordHash already hashed; this constructor never sees a plaintext password, so
      *                     there is no way to accidentally persist one
      */
     public static AppUser register(String handle, String email, String passwordHash, String fullName) {

@@ -154,7 +154,7 @@
   <profiles>
     <!-- Dependency vulnerability scanning.
          Kept in a profile because it downloads and caches the NVD database, which takes minutes on
-         a cold run — long enough that having it on every local build would train people to skip
+         a cold run, long enough that having it on every local build would train people to skip
          the build. CI runs it on a schedule and on pull requests, where that cost is paid once. -->
     <profile>
       <id>security-scan</id>

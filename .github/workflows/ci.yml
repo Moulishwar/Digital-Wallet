@@ -35,7 +35,7 @@ jobs:
           cache: maven
 
       # Testcontainers needs a Docker daemon. GitHub-hosted Ubuntu runners have one already, so
-      # there is nothing to install — the integration tests run against a real PostgreSQL 16 here
+      # there is nothing to install: the integration tests run against a real PostgreSQL 16 here
       # exactly as they do locally, which is the point of using Testcontainers rather than H2.
       - name: Build, unit test and integration test
         run: ./mvnw -B verify

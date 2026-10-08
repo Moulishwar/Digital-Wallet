@@ -4,7 +4,7 @@ public enum AccountStatus {
 
     ACTIVE,
 
-    /** Temporarily blocked — no postings in or out, but the account still exists. */
+    /** Temporarily blocked: no postings in or out, but the account still exists. */
     FROZEN,
 
     /** Permanently closed. */

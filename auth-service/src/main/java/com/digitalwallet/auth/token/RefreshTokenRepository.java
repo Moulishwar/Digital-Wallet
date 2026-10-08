@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID> {
 
-    /** Lookup is by hash — the raw token is never stored, so it cannot be searched for. */
+    /** Lookup is by hash: the raw token is never stored, so it cannot be searched for. */
     Optional<RefreshToken> findByTokenHash(String tokenHash);
 
     /**

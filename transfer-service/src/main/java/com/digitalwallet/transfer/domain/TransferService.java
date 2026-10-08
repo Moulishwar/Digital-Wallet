@@ -33,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>Deliberately <b>not</b> {@code @Transactional} at the top level. The flow makes a network call
  * in the middle, and holding a database transaction open across it would tie up a connection for the
- * length of someone else's outage — and, worse, would mean the transfer row recording "I asked" only
+ * length of someone else's outage and, worse, would mean the transfer row recording "I asked" only
  * becomes visible once the answer is already known, which defeats the point of writing it first.
  * Each step commits on its own instead.
  *
@@ -44,7 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
  *   <li>The key is claimed, which is what makes concurrent duplicates collide.</li>
  *   <li>The transfer is written as PENDING <em>before</em> the posting call, so a crash mid-call
  *       still leaves evidence the request was accepted.</li>
- *   <li>The posting is attempted, and its three possible answers are handled separately —
+ *   <li>The posting is attempted, and its three possible answers are handled separately,
  *       including the one that means "I do not know".</li>
  * </ol>
  */
@@ -83,14 +83,14 @@ public class TransferService {
      * The HTTP answer, already serialized.
      *
      * <p>Carrying the body as JSON text rather than an object is what makes a replay a replay: the
-     * retry returns the answer the original request produced — the same transfer id, the same
-     * balance, the same timestamps — rather than a freshly computed one that might have drifted.
+     * retry returns the answer the original request produced (the same transfer id, the same
+     * balance, the same timestamps) rather than a freshly computed one that might have drifted.
      *
      * <p>Note that {@code response_body} is a {@code jsonb} column, and PostgreSQL normalises jsonb:
      * it reorders object keys and drops insignificant whitespace. So the replayed bytes are not
      * identical to the original bytes, though every field and value is. Key order carries no meaning
      * in JSON and no correct client can observe the difference, and jsonb buys validation and
-     * queryability in exchange — but it is worth knowing the guarantee is "the same response", not
+     * queryability in exchange, but it is worth knowing the guarantee is "the same response", not
      * "the same bytes".
      */
     public record SendOutcome(int status, String body) {

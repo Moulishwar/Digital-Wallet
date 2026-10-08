@@ -63,8 +63,8 @@ public class IdempotencyStore {
      * Gives up a claim whose work could not be started.
      *
      * <p>Without this, a request that failed before it could produce any answer would leave the key
-     * permanently claimed and unanswerable, so the caller's retry — the exact thing the key exists
-     * to support — would hang and then be refused.
+     * permanently claimed and unanswerable, so the caller's retry (the exact thing the key exists
+     * to support) would hang and then be refused.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void release(UUID recordId) {

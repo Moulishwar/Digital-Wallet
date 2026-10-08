@@ -41,7 +41,7 @@
          @RestControllerAdvice taking an HttpServletRequest, and pulling it in would drag
          spring-boot-starter-web onto the classpath, which switches this application off the
          reactive stack and breaks the gateway outright. The RFC 7807 shape is reproduced here in
-         reactive form instead — a small duplication, and the correct side of the trade. -->
+         reactive form instead: a small duplication, and the correct side of the trade. -->
 
     <!-- One Swagger UI at /api/docs for the whole API. The specs themselves come from the
          services, proxied by the routes in application.yml; the gateway documents nothing of its

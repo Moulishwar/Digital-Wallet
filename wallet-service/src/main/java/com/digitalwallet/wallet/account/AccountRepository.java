@@ -20,7 +20,7 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
      * Loads accounts for update, taking row locks in a deterministic order.
      *
      * <p>The {@code order by a.id} is the entire point of this method, not a tidy-up. Two
-     * simultaneous transfers in opposite directions — Alice to Bob, and Bob to Alice — would each
+     * simultaneous transfers in opposite directions (Alice to Bob, and Bob to Alice) would each
      * lock their own sender first, then block forever waiting for the other's row. Sorting by a
      * stable key means every transaction requests locks in the same sequence, so one simply waits
      * for the other instead of deadlocking.

@@ -55,7 +55,7 @@ public class TransferController {
      * Sends money to another user, found by handle.
      *
      * <p>{@code Idempotency-Key} is required rather than optional. A transfer that times out leaves
-     * the client unable to tell whether it succeeded, and the only thing it can safely do is retry —
+     * the client unable to tell whether it succeeded, and the only thing it can safely do is retry,
      * which must not pay twice. Requiring the key makes every caller correct by default instead of
      * only the careful ones.
      *
@@ -65,7 +65,7 @@ public class TransferController {
      * back as a Problem Detail with the status matching the reason.
      *
      * <p>The response is written as pre-serialized JSON so that a replayed request returns the
-     * original response rather than a fresh rendering of it — the same fields and values, though
+     * original response rather than a fresh rendering of it: the same fields and values, though
      * not byte for byte, since jsonb storage reorders keys (see {@code TransferService.SendOutcome}).
      */
     @PostMapping

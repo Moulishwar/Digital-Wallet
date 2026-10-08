@@ -339,7 +339,7 @@ class AuthFlowIT extends AbstractAuthIntegrationTest {
                                 """.formatted(firstRefresh)))
                 .andExpect(status().isUnauthorized());
 
-        // The legitimate token is now dead too — that is the point, not a side effect.
+        // The legitimate token is now dead too: that is the point, not a side effect.
         mockMvc.perform(post("/api/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""

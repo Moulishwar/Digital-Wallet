@@ -29,12 +29,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * <p>The bug it guards against is the classic one. Check the balance, then debit, in two separate
  * steps: two concurrent withdrawals both read the same pre-debit balance, both decide there is
- * enough, and both proceed — leaving the wallet negative and money created out of nothing. It is
+ * enough, and both proceed, leaving the wallet negative and money created out of nothing. It is
  * invisible in single-threaded testing and in casual manual use, and it is exactly the sort of thing
  * that only shows up under real load.
  *
  * <p>This lives in wallet-service rather than transfer-service on purpose. The guarantee under test
- * belongs to the posting path — a real database, real row locks, real transactions. Run against a
+ * belongs to the posting path: a real database, real row locks, real transactions. Run against a
  * stubbed wallet-service it would prove nothing at all.
  */
 class OverdraftConcurrencyIT extends AbstractPostgresIntegrationTest {
@@ -77,7 +77,7 @@ class OverdraftConcurrencyIT extends AbstractPostgresIntegrationTest {
         AtomicInteger otherFailures = new AtomicInteger();
 
         // Every thread waits on the same latch, so the attempts genuinely overlap instead of
-        // trickling through one at a time — which would pass even with the lock removed.
+        // trickling through one at a time, which would pass even with the lock removed.
         CountDownLatch startLine = new CountDownLatch(1);
         List<Callable<Void>> attempts = new ArrayList<>();
         for (int i = 0; i < ATTEMPTS; i++) {

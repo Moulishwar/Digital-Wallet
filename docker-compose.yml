@@ -1,13 +1,13 @@
 # Local development stack.
 #
-# Each service gets its own PostgreSQL instance — not separate schemas in one server. Sharing a
+# Each service gets its own PostgreSQL instance, not separate schemas in one server. Sharing a
 # server would make it trivially easy to write a cross-service join, which is exactly the coupling
 # the service boundaries exist to prevent.
 #
 # Two ways to run it:
 #
 #   docker compose up -d
-#       Databases only. Run the services yourself from an IDE or with `./mvnw spring-boot:run` —
+#       Databases only. Run the services yourself from an IDE or with `./mvnw spring-boot:run`:
 #       the everyday development loop, where you want a debugger attached.
 #
 #   ./mvnw -DskipTests install -pl platform-common -am
@@ -31,7 +31,7 @@ services:
       POSTGRES_DB: ${WALLET_DB_NAME:-walletdb}
       POSTGRES_USER: ${WALLET_DB_USER:-wallet}
       # No default. Compose refuses to start if this is unset, rather than booting with a
-      # guessable password — the same rule the services apply to their own config.
+      # guessable password: the same rule the services apply to their own config.
       POSTGRES_PASSWORD: ${WALLET_DB_PASSWORD:?WALLET_DB_PASSWORD must be set in .env}
     ports:
       - "${WALLET_DB_PORT:-5433}:5432"

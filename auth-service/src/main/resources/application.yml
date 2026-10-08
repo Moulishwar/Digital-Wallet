@@ -40,7 +40,7 @@ security:
     public-key: ${JWT_PUBLIC_KEY:}
     # Escape hatch for tests only. When true and no keypair is configured, an ephemeral one is
     # generated at startup. Tokens then die with the process, which is fine for a test and
-    # useless in production — hence it must be switched on deliberately.
+    # useless in production, hence it must be switched on deliberately.
     allow-ephemeral-keys: false
 
   refresh-cookie:

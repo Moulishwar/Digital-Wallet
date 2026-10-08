@@ -12,7 +12,7 @@ import java.util.Locale;
  *
  * <p>The fields are canonicalised before hashing rather than the raw JSON being digested. Two
  * requests that mean the same thing must produce the same hash even if a client reorders its JSON
- * fields, changes its whitespace, or sends {@code "@Alice"} where it sent {@code "alice"} before —
+ * fields, changes its whitespace, or sends {@code "@Alice"} where it sent {@code "alice"} before;
  * hashing the raw bytes would call those different requests and reject a legitimate retry.
  *
  * <p>A separator that cannot occur inside any field is used between them. Concatenating values

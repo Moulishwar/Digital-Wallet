@@ -53,7 +53,7 @@ public class SecurityConfig {
                         //
                         // The gateway has no route to /internal, so these are not addressable from
                         // outside. But that is network-level protection, and network-level
-                        // protection assumes nothing hostile ever gets inside the perimeter —
+                        // protection assumes nothing hostile ever gets inside the perimeter,
                         // which is exactly the assumption that fails. These endpoints move money
                         // and provision wallets, so they also require a credential a caller has to
                         // hold, not merely a position on the network.

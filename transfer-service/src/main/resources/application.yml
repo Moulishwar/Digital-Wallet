@@ -64,12 +64,12 @@ auth:
   read-timeout: 3s
 
 transfers:
-  # Ceiling on a single transfer. Not a regulatory limit — a blast radius. There are no per-day
+  # Ceiling on a single transfer. Not a regulatory limit but a blast radius. There are no per-day
   # or velocity limits.
   max-amount-minor: 10000000
   reconciliation:
     # How often the sweep looks for transfers whose outcome is still unknown, and how long a
-    # transfer must have been stuck before it is picked up — long enough that an in-flight request
+    # transfer must have been stuck before it is picked up: long enough that an in-flight request
     # is not mistaken for an abandoned one.
     interval: 30s
     min-age: 10s

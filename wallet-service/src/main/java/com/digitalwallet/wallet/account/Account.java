@@ -14,7 +14,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * An account in the ledger — either a user's wallet or one of the internal system accounts.
+ * An account in the ledger: either a user's wallet or one of the internal system accounts.
  *
  * <p>{@code balanceMinor} is a cache of {@code SUM(ledger_line.amount_minor)} for this account,
  * maintained in the same transaction as the posting that changes it. The ledger stays the source
@@ -78,7 +78,7 @@ public class Account {
      * code path is posting.
      *
      * <p>The overdraft check lives here, on the entity, so it cannot be bypassed by a caller that
-     * forgets it. It runs while the row is locked, in the same transaction as the ledger write —
+     * forgets it. It runs while the row is locked, in the same transaction as the ledger write;
      * checking a balance in one transaction and debiting in another is the classic
      * time-of-check-to-time-of-use bug that lets a wallet go negative under concurrency.
      *

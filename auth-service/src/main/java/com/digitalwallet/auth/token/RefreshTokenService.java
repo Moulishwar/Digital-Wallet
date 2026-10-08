@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
  * must be revocable. A JWT is valid until it expires no matter what the server thinks; a row in a
  * table can be marked dead the moment it needs to be.
  *
- * <p>Every use rotates the token. That single rule is what makes theft detectable — see
+ * <p>Every use rotates the token. That single rule is what makes theft detectable; see
  * {@link #rotate}.
  */
 @Service
@@ -46,7 +46,7 @@ public class RefreshTokenService {
     }
 
     /**
-     * @return the raw token, which is returned to the client and then unrecoverable — only its
+     * @return the raw token, which is returned to the client and then unrecoverable, since only its
      *         hash is kept
      */
     @Transactional
@@ -61,7 +61,7 @@ public class RefreshTokenService {
      * Exchanges a refresh token for a new one, invalidating the old.
      *
      * <p>The interesting case is a token that is presented after it has already been rotated away.
-     * A correct client never does that — it discards the old token the moment it receives a new
+     * A correct client never does that: it discards the old token the moment it receives a new
      * one. So a second use means two parties hold the same token, and there is no way to tell the
      * legitimate client from the thief. Rather than guess, every live token for that user is
      * revoked and both are forced to log in again.
@@ -97,7 +97,7 @@ public class RefreshTokenService {
         return new RotationResult(user, newRaw);
     }
 
-    /** Ends one session. Unknown or already-dead tokens are ignored — logout is idempotent. */
+    /** Ends one session. Unknown or already-dead tokens are ignored: logout is idempotent. */
     @Transactional
     public void revoke(String rawToken) {
         refreshTokenRepository.findByTokenHash(hash(rawToken)).ifPresent(RefreshToken::revoke);
@@ -117,7 +117,7 @@ public class RefreshTokenService {
      * SHA-256, not BCrypt.
      *
      * <p>BCrypt is deliberately slow to make guessing a human-chosen password expensive. This value
-     * is 256 bits of cryptographic randomness, so there is nothing to guess — and a slow hash would
+     * is 256 bits of cryptographic randomness, so there is nothing to guess, and a slow hash would
      * mean an unindexable lookup on every refresh. A fast digest is the right tool here.
      */
     private String hash(String rawToken) {

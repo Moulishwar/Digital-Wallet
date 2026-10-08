@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Service-to-service endpoints. These are never routed through the gateway — the gateway's route
+ * Service-to-service endpoints. These are never routed through the gateway: the gateway's route
  * table simply has no entry under {@code /internal}, so they are unreachable from outside the
  * network the services share.
  *
@@ -71,7 +71,7 @@ public class InternalController {
      *
      * <p>The request names <em>users</em>, not accounts. Resolving them here keeps account ids
      * inside the service that owns them, and lets a transfer to someone whose wallet was never
-     * provisioned — because this service was down when they registered — succeed
+     * provisioned (because this service was down when they registered) succeed
      * instead of failing for a reason the sender cannot act on.
      *
      * <p>Returns 200 rather than 201 when {@code externalRef} has been seen before, which is how
@@ -85,7 +85,7 @@ public class InternalController {
                     "fromOwnerUserId and toOwnerUserId must differ");
         }
 
-        // Idempotent and race-safe — see WalletService.provisionWallet.
+        // Idempotent and race-safe; see WalletService.provisionWallet.
         Account from = walletService.provisionWallet(request.fromOwnerUserId());
         Account to = walletService.provisionWallet(request.toOwnerUserId());
 
@@ -104,7 +104,7 @@ public class InternalController {
             result = postingService.post(command);
         } catch (DataIntegrityViolationException raced) {
             // Another caller committed this same externalRef first. Its outcome is the right
-            // answer for us too — that is what makes the reference an idempotency key.
+            // answer for us too: that is what makes the reference an idempotency key.
             result = postingService.findByExternalRef(request.externalRef()).orElseThrow(() -> raced);
         }
 

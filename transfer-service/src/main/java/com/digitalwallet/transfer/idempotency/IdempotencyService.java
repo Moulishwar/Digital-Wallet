@@ -20,15 +20,15 @@ import org.springframework.stereotype.Service;
  * <p>Three cases arise, and only the third is subtle:
  *
  * <ol>
- *   <li><b>New key</b> — claimed, and the caller does the work.</li>
- *   <li><b>Known key, already answered</b> — the stored response is replayed verbatim.</li>
- *   <li><b>Known key, not yet answered</b> — another request holds it and is still working. This
+ *   <li><b>New key</b>: claimed, and the caller does the work.</li>
+ *   <li><b>Known key, already answered</b>: the stored response is replayed verbatim.</li>
+ *   <li><b>Known key, not yet answered</b>: another request holds it and is still working. This
  *       one waits briefly for that answer rather than either duplicating the work or immediately
  *       refusing, because in the common case (a client firing retries at a request that is about to
  *       succeed) waiting a few milliseconds returns the right answer instead of an error.</li>
  * </ol>
  *
- * <p>The wait is bounded. If the holder never answers — its process died mid-request — waiting
+ * <p>The wait is bounded. If the holder never answers (its process died mid-request), waiting
  * forever would turn one lost request into a hung one for every retry after it, so past the bound
  * the caller is told plainly that the key is in flight and can try again.
  */
@@ -127,7 +127,7 @@ public class IdempotencyService {
 
             Optional<IdempotencyRecord> latest = store.find(idempotencyKey, userId);
             if (latest.isEmpty()) {
-                // The holder released its claim without answering. Take it over — but if yet
+                // The holder released its claim without answering. Take it over, but if yet
                 // another request gets there first, keep waiting on that one. Calling back into
                 // claim() here would recurse, and each level would start its own fresh deadline.
                 try {

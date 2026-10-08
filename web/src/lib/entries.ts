@@ -8,12 +8,12 @@ const longDate = new Intl.DateTimeFormat('en-IN', {
   year: 'numeric',
 });
 
-/** "06 Oct" — how a ledger dates a line. */
+/** "06 Oct": how a ledger dates a line. */
 export function lineDate(iso: string): string {
   return dayMonth.format(new Date(iso));
 }
 
-/** "Tuesday, 7 October 2026" — how a ledger dates a page. */
+/** "Tuesday, 7 October 2026": how a ledger dates a page. */
 export function pageDate(date: Date = new Date()): string {
   return longDate.format(date);
 }

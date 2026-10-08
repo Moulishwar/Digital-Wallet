@@ -4,7 +4,7 @@ package com.digitalwallet.gateway.ratelimit;
  * A single client's allowance, as a token bucket.
  *
  * <p>Chosen over a fixed window because a fixed window lets a client spend its whole allowance at
- * the end of one window and again at the start of the next — twice the intended rate, in an
+ * the end of one window and again at the start of the next: twice the intended rate, in an
  * instant, precisely when someone is hammering the service. A bucket refills continuously, so the
  * long-run rate is the refill rate and {@code capacity} is only how much burst is tolerated.
  *

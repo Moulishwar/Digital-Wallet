@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
  * visible, but only the caller's own balance.
  *
  * <p>The other side of a transfer is another person's wallet. Showing that it moved +50.00 is fine
- * — the caller sent it — but its balance afterwards is that person's private business, so it is
+ * (the caller sent it), but its balance afterwards is that person's private business, so it is
  * never included.
  */
 @Service

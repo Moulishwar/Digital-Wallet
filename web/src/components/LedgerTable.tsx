@@ -9,7 +9,7 @@ interface Props {
   caption: string;
   lines: StatementLine[];
   /**
-   * "plain" for everyday reading — money in, money out. "book" for the accountant's view — debit,
+   * "plain" for everyday reading: money in, money out. "book" for the accountant's view: debit,
    * credit, and the running balance after every line.
    */
   variant?: 'plain' | 'book';
@@ -25,7 +25,7 @@ interface Props {
 
 /**
  * Lines of the book on ruled paper. A real table, so a screen reader announces each amount with
- * its column — "Money out, 50.00" — and every row sits exactly on a printed rule.
+ * its column ("Money out, 50.00"), and every row sits exactly on a printed rule.
  */
 export function LedgerTable({
   caption,

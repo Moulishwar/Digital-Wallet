@@ -32,7 +32,7 @@ const KIND = { TOPUP: 'Test money added', TRANSFER: 'Transfer', REVERSAL: 'Rever
 
 /**
  * One journal entry in full: every account it touched, split into debit and credit, and the
- * proof that the two sides are equal. The other person's balance is never shown — the API does
+ * proof that the two sides are equal. The other person's balance is never shown; the API does
  * not send it.
  */
 export function EntryCard({ journalEntryId }: { journalEntryId: string }) {

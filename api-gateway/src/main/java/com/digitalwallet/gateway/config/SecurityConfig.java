@@ -27,7 +27,7 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
  * The gateway's job at the edge: reject what obviously should not reach a service.
  *
  * <p>It verifies the token here <em>and</em> every service verifies it again. That is not redundant
- * work done twice by accident — it is defence in depth. The gateway check means an expired or forged
+ * work done twice by accident; it is defence in depth. The gateway check means an expired or forged
  * token never costs a service a thread or a database connection; the service check means nothing is
  * trusted merely for having arrived from inside the network.
  *
@@ -78,7 +78,7 @@ public class SecurityConfig {
 
                 // Set here as well as below. A request that presents a token which then fails
                 // verification is rejected by the resource server's own entry point, not the one
-                // under exceptionHandling — leaving it unset there answers a bad token with an
+                // under exceptionHandling, and leaving it unset there answers a bad token with an
                 // empty-bodied 401 while a missing one gets a Problem Detail.
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> { })

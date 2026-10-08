@@ -15,7 +15,7 @@ import java.util.UUID;
  *
  * <p>This entity holds no balance and performs no arithmetic on money. It records intent and
  * outcome; wallet-service owns the value itself. Its own id doubles as the posting's
- * {@code externalRef}, which is unique over there — that single fact is what makes retrying a
+ * {@code externalRef}, which is unique over there, and that single fact is what makes retrying a
  * posting safe.
  *
  * <p>Status changes go through {@link #complete()}, {@link #fail(FailureReason)} and
@@ -90,7 +90,7 @@ public class Transfer {
     }
 
     /**
-     * Opens a transfer in {@link TransferStatus#PENDING}. Nothing has moved at this point — the
+     * Opens a transfer in {@link TransferStatus#PENDING}. Nothing has moved at this point; the
      * row exists so that if the process dies in the next millisecond there is still a record that
      * this request was accepted.
      */
@@ -122,7 +122,7 @@ public class Transfer {
     }
 
     /**
-     * The posting's outcome is unknown — a timeout, or a downstream error that could have landed
+     * The posting's outcome is unknown: a timeout, or a downstream error that could have landed
      * either side of the commit. Left for the reconciliation sweep to settle.
      */
     public void markUnresolved() {

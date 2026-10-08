@@ -15,7 +15,7 @@ import org.testcontainers.utility.DockerImageName;
  * Base for integration tests, running against a real PostgreSQL 16 in Docker.
  *
  * <p>Deliberately not H2. This ledger depends on behaviour an in-memory database either fakes or
- * lacks outright — {@code SELECT ... FOR UPDATE} semantics, partial unique indexes, and the
+ * lacks outright: {@code SELECT ... FOR UPDATE} semantics, partial unique indexes, and the
  * PL/pgSQL trigger that makes ledger lines append-only. A test suite that passes on H2 and then
  * meets Postgres in production has proven very little.
  *
@@ -59,7 +59,7 @@ public abstract class AbstractPostgresIntegrationTest {
      * Returns the database to a clean slate between tests.
      *
      * <p>Note the trigger dance. Ledger lines are append-only and the database enforces it, which
-     * means even the test suite cannot simply delete them — exactly as intended. Disabling the
+     * means even the test suite cannot simply delete them, exactly as intended. Disabling the
      * trigger for the duration of a truncate is a test-only concession, and the fact that it is
      * needed at all is evidence the protection works.
      *

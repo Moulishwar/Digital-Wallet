@@ -27,14 +27,14 @@ import org.springframework.transaction.annotation.Transactional;
  * carries the transfer id. So the sweep can simply ask, and the answer is unambiguous:
  *
  * <ul>
- *   <li><b>The posting exists</b> — it committed. Mark the transfer completed.</li>
- *   <li><b>It does not</b> — it never committed. Retry it. The unique constraint makes a duplicate
+ *   <li><b>The posting exists</b>: it committed. Mark the transfer completed.</li>
+ *   <li><b>It does not</b>: it never committed. Retry it. The unique constraint makes a duplicate
  *       impossible even if the original request turns out to have been in flight all along, which
  *       is the entire reason that constraint is there rather than being a convenience column.</li>
  * </ul>
  *
  * <p>Nothing here guesses. If wallet-service cannot be reached, the transfer is left exactly as it
- * was and the next run tries again — a transfer that stays unresolved is a visible problem, while
+ * was and the next run tries again. A transfer that stays unresolved is a visible problem, while
  * one wrongly marked failed is an invisible one.
  */
 @Component

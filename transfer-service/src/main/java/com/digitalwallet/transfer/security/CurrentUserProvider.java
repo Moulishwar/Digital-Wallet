@@ -22,8 +22,8 @@ public interface CurrentUserProvider {
     /**
      * The caller's raw bearer token, for forwarding to another service on their behalf.
      *
-     * <p>Forwarding the user's own token — rather than calling downstream with some service-wide
-     * credential — means the downstream request carries exactly the caller's authority and no more.
+     * <p>Forwarding the user's own token, rather than calling downstream with some service-wide
+     * credential, means the downstream request carries exactly the caller's authority and no more.
      */
     String requireCurrentToken();
 }

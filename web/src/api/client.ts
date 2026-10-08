@@ -4,7 +4,7 @@ import type { Problem, TokenResponse } from './types';
  * The one way this app talks to the API.
  *
  * The access token lives in this module's memory and nowhere else: not localStorage, not
- * sessionStorage. The refresh token never reaches JavaScript at all — auth-service sets it as an
+ * sessionStorage. The refresh token never reaches JavaScript at all: auth-service sets it as an
  * httpOnly cookie when a request carries the transport header below. A page reload therefore
  * starts with no access token, and the first call recovers one silently from the cookie.
  */

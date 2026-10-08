@@ -9,7 +9,7 @@ const grouping = new Intl.NumberFormat('en-IN');
 /** The true minus sign, which lines up with the digits in a tabular column; "-" does not. */
 export const MINUS = '−';
 
-/** "1,00,000.00" — Indian lakh/crore grouping, no sign, no symbol. */
+/** "1,00,000.00": Indian lakh/crore grouping, no sign, no symbol. */
 export function formatAmount(minor: number): string {
   const absolute = Math.abs(minor);
   const rupees = Math.trunc(absolute / 100);
@@ -22,7 +22,7 @@ export function formatRupees(minor: number): string {
   return `${minor < 0 ? MINUS : ''}₹${formatAmount(minor)}`;
 }
 
-/** "+50.00" / "−50.00" — for places where the direction must be read from the figure itself. */
+/** "+50.00" / "−50.00", for places where the direction must be read from the figure itself. */
 export function formatSigned(minor: number): string {
   return `${minor < 0 ? MINUS : '+'}${formatAmount(minor)}`;
 }

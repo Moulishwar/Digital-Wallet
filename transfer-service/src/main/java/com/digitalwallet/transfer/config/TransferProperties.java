@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * Transfer behaviour, bound from {@code transfers.*}.
  *
- * @param maxAmountMinor  ceiling on a single transfer, in paise. Not a regulatory limit — a blast
+ * @param maxAmountMinor  ceiling on a single transfer, in paise. Not a regulatory limit but a blast
  *                        radius, so a fat-fingered or hostile request cannot move an absurd sum in
  *                        one call. There are no per-day or velocity limits.
  * @param reconciliation  settings for the sweep that settles transfers of unknown outcome

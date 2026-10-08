@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AppUserRepository extends JpaRepository<AppUser, UUID> {
 
-    /** Callers must pass an already-normalized address — see {@link AppUser#normalizeEmail}. */
+    /** Callers must pass an already-normalized address; see {@link AppUser#normalizeEmail}. */
     Optional<AppUser> findByEmail(String email);
 
     Optional<AppUser> findByHandle(String handle);

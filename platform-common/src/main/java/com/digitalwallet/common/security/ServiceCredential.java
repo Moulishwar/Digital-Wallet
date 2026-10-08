@@ -6,7 +6,7 @@ package com.digitalwallet.common.security;
  * <p>Deliberately simple. mTLS is the correct production answer and is a planned future extension,
  * rather than being half-implemented here and described as if it were the
  * real thing. What this does buy is that reaching the network is no longer, by itself, enough to
- * move money — which is the gap that matters most.
+ * move money, which is the gap that matters most.
  */
 public final class ServiceCredential {
 

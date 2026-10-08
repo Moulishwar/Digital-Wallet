@@ -7,7 +7,7 @@ public enum AccountType {
 
     /**
      * The counterparty for money entering or leaving the platform. Runs a large negative balance
-     * by design — its magnitude is the total value held in user wallets.
+     * by design; its magnitude is the total value held in user wallets.
      */
     SYSTEM_FUNDING,
 

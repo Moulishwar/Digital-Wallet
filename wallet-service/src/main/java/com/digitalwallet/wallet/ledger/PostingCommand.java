@@ -43,7 +43,7 @@ public record PostingCommand(JournalEntryType type,
         }
     }
 
-    /** A transfer with no statement labels — the shape used where only the arithmetic matters. */
+    /** A transfer with no statement labels: the shape used where only the arithmetic matters. */
     public static PostingCommand transfer(String externalRef, UUID fromAccountId, UUID toAccountId,
                                           Money amount, String description) {
         return transfer(externalRef, fromAccountId, toAccountId, amount, description, null, null, null);

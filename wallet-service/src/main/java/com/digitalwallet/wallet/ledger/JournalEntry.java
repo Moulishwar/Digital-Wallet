@@ -78,7 +78,7 @@ public class JournalEntry {
     /**
      * Records one side of the movement and applies it to the account's cached balance.
      *
-     * <p>The account must already be locked by the caller — see
+     * <p>The account must already be locked by the caller; see
      * {@code AccountRepository.lockAllByIdInOrder}.
      *
      * @param counterparty who this line's statement row should name as the other party; may be null
@@ -109,7 +109,7 @@ public class JournalEntry {
         }
         Money sum = sumOfLines();
         if (!sum.isZero()) {
-            // A 500, not a 4xx — reaching here means a bug in the posting code, not bad input.
+            // A 500, not a 4xx: reaching here means a bug in the posting code, not bad input.
             throw new ApiException(ErrorCode.UNBALANCED_ENTRY,
                     "Journal entry lines sum to %s, expected 0".formatted(sum.minor()));
         }

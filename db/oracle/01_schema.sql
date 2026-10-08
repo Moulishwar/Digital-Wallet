@@ -1,5 +1,5 @@
 -- =============================================================================================
---  Digital Wallet — ledger schema, Oracle dialect
+--  Digital Wallet: ledger schema, Oracle dialect
 -- =============================================================================================
 --
 --  The same model as wallet-service's Flyway migrations, expressed in Oracle. This is not a port
@@ -17,7 +17,7 @@
 --    BIGINT          -> NUMBER(19). Same range as a 64-bit signed integer. Note this is still an
 --                       exact type: money is never held in anything that rounds.
 --    TIMESTAMPTZ     -> TIMESTAMP WITH TIME ZONE.
---    VARCHAR         -> VARCHAR2. Never CHAR — it blank-pads, so 'INR ' would not equal 'INR'.
+--    VARCHAR         -> VARCHAR2. Never CHAR: it blank-pads, so 'INR ' would not equal 'INR'.
 --    partial index   -> function-based unique index. Oracle indexes ignore all-NULL keys, so a
 --                       CASE expression reproduces "unique only where the value is not null".
 --    BEFORE trigger  -> compound/row trigger raising an application error.
@@ -76,7 +76,7 @@ CREATE TABLE account
 );
 
 -- One wallet per user. PostgreSQL expresses this as a partial index; Oracle has no WHERE clause on
--- an index, but it does skip entries whose key is entirely NULL — so a CASE that yields NULL for
+-- an index, but it does skip entries whose key is entirely NULL, so a CASE that yields NULL for
 -- system accounts gives exactly the same guarantee.
 CREATE UNIQUE INDEX account_owner_uk ON account (
     CASE WHEN owner_user_id IS NOT NULL THEN owner_user_id END
@@ -89,14 +89,14 @@ CREATE UNIQUE INDEX account_system_type_uk ON account (
 
 
 -- ---------------------------------------------------------------------------------------------
---  journal_entry — one movement of value
+--  journal_entry: one movement of value
 -- ---------------------------------------------------------------------------------------------
 CREATE TABLE journal_entry
 (
     id           RAW(16) DEFAULT SYS_GUID() NOT NULL,
     type         VARCHAR2(20)               NOT NULL,
 
-    -- The caller's identifier for this posting — a transfer id, or a scoped top-up key. UNIQUE is
+    -- The caller's identifier for this posting: a transfer id, or a scoped top-up key. UNIQUE is
     -- what makes posting idempotent: a retry of a posting that already committed collides here
     -- instead of moving the money a second time.
     external_ref VARCHAR2(128)              NOT NULL,
@@ -114,7 +114,7 @@ CREATE TABLE journal_entry
 
 
 -- ---------------------------------------------------------------------------------------------
---  ledger_line — the two-or-more sides of an entry, which must sum to zero
+--  ledger_line: the two-or-more sides of an entry, which must sum to zero
 -- ---------------------------------------------------------------------------------------------
 CREATE TABLE ledger_line
 (
@@ -171,7 +171,7 @@ END;
 
 
 -- ---------------------------------------------------------------------------------------------
---  daily_account_rollup — pre-aggregated daily movement, maintained by the MERGE in 03_reports.sql
+--  daily_account_rollup: pre-aggregated daily movement, maintained by the MERGE in 03_reports.sql
 -- ---------------------------------------------------------------------------------------------
 CREATE TABLE daily_account_rollup
 (
@@ -192,7 +192,7 @@ CREATE TABLE daily_account_rollup
 --  System accounts
 -- ---------------------------------------------------------------------------------------------
 --  Value cannot appear from nowhere in a double-entry system: a top-up credits a user wallet, so
---  something must be debited. SYSTEM_FUNDING is that counterparty — it stands for the bank rail the
+--  something must be debited. SYSTEM_FUNDING is that counterparty: it stands for the bank rail the
 --  money arrives from, and its balance is expected to be large and negative.
 --
 --  Ids are fixed rather than generated so application code can hold them as constants.

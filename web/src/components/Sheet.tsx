@@ -4,8 +4,8 @@ import styles from './Sheet.module.css';
 
 /**
  * A page slid up over the book, for showing one thing on a phone where there is no facing page.
- * Radix supplies the behaviour a dialog must have — focus moved in and trapped, Escape to close,
- * focus returned afterwards, announced as a dialog — and none of the look.
+ * Radix supplies the behaviour a dialog must have (focus moved in and trapped, Escape to close,
+ * focus returned afterwards, announced as a dialog) and none of the look.
  */
 export function Sheet({
   open,

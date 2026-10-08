@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 /**
  * Resolves the caller from the verified JWT.
  *
- * <p>The token has already been checked by the resource-server filter — signature verified against
- * auth-service's published key, expiry enforced — before anything reaches here. So the subject
+ * <p>The token has already been checked by the resource-server filter (signature verified against
+ * auth-service's published key, expiry enforced) before anything reaches here. So the subject
  * claim can be trusted: it was signed by a private key this service does not hold, not written by
  * the client.
  */

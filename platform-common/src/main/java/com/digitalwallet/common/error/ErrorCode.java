@@ -13,7 +13,7 @@ public enum ErrorCode {
     /** The caller has no wallet, or named an account that does not exist. */
     ACCOUNT_NOT_FOUND("account-not-found", HttpStatus.NOT_FOUND, "Account not found"),
 
-    /** A wallet already exists for this user — provisioning is idempotent, so this is a conflict. */
+    /** A wallet already exists for this user; provisioning is idempotent, so this is a conflict. */
     ACCOUNT_ALREADY_EXISTS("account-already-exists", HttpStatus.CONFLICT, "Account already exists"),
 
     /** The account is frozen or closed and cannot take part in a posting. */
@@ -26,7 +26,7 @@ public enum ErrorCode {
     INSUFFICIENT_FUNDS("insufficient-funds", HttpStatus.UNPROCESSABLE_ENTITY, "Insufficient funds"),
 
     /**
-     * A journal entry whose lines do not sum to zero. This is a bug, never a user error — it means
+     * A journal entry whose lines do not sum to zero. This is a bug, never a user error: it means
      * money would have been created or destroyed, so it is deliberately a 500.
      */
     UNBALANCED_ENTRY("unbalanced-entry", HttpStatus.INTERNAL_SERVER_ERROR, "Unbalanced journal entry"),

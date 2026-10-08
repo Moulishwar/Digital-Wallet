@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p>Every route is scoped to {@code /me} and resolves identity through
  * {@link CurrentUserProvider}. There is deliberately no {@code userId} path variable or query
- * parameter anywhere in this controller — if there were, the server would have to decide whether
+ * parameter anywhere in this controller. If there were, the server would have to decide whether
  * the caller is allowed to use it, and forgetting that check even once is how insecure direct
  * object reference vulnerabilities happen. Not accepting the parameter removes the question.
  */
@@ -75,7 +75,7 @@ public class WalletController {
      *
      * <p>The {@code Idempotency-Key} header is required rather than optional. A top-up that times
      * out leaves the client unable to tell whether it succeeded, and the only safe thing it can do
-     * is retry — which must not deposit twice. Making the key mandatory means every caller is
+     * is retry, which must not deposit twice. Making the key mandatory means every caller is
      * correct by default instead of only the careful ones.
      *
      * <p>Returns 201 for a posting that actually moved money and 200 when the key had already been

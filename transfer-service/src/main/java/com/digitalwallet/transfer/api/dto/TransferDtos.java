@@ -57,7 +57,7 @@ public final class TransferDtos {
 
     /**
      * @param senderBalanceAfterMinor the sender's balance once the money moved. Null unless the
-     *                                transfer completed — there is no new balance to report for one
+     *                                transfer completed; there is no new balance to report for one
      *                                that failed or has not settled.
      */
     public record TransferResponse(UUID transferId,

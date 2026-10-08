@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>The separate transaction is the entire reason this class exists, and it is not a style choice.
  * Reuse detection has to do two things: revoke everything, and then reject the request. Rejecting
- * means throwing, and a thrown exception rolls the surrounding transaction back — which would undo
+ * means throwing, and a thrown exception rolls the surrounding transaction back, which would undo
  * the revocation and leave the stolen token working. The caller would still get a 401 and the bug
  * would look like correct behaviour from the outside.
  *

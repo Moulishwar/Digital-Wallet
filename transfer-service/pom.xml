@@ -106,8 +106,8 @@
       <scope>test</scope>
     </dependency>
     <!-- Stubs wallet-service and auth-service over real HTTP. Chosen over MockRestServiceServer
-         because the flows worth testing here are the ugly ones — a 5xx, and a socket that simply
-         stops responding — and only a real server on a real port can produce those. The shaded
+         because the flows worth testing here are the ugly ones (a 5xx, and a socket that simply
+         stops responding), and only a real server on a real port can produce those. The shaded
          standalone jar keeps WireMock's own Jetty and Jackson off the application classpath. -->
     <dependency>
       <groupId>org.wiremock</groupId>

@@ -26,7 +26,7 @@ import java.util.UUID;
  * someone writes it here.
  *
  * <p>Every amount crosses the wire in minor units as an integer. A JSON number like {@code 12.10}
- * is parsed as a binary double by most clients, which cannot represent it exactly — sending
+ * is parsed as a binary double by most clients, which cannot represent it exactly; sending
  * {@code 1210} avoids the whole class of problem. A formatted string is included alongside purely
  * for display.
  */
@@ -57,7 +57,7 @@ public final class WalletDtos {
      * A movement between two users' wallets.
      *
      * <p>Deliberately expressed in <em>owner user ids</em>, not account ids. Wallet account
-     * identifiers are this service's private business — a caller that never learns them cannot
+     * identifiers are this service's private business: a caller that never learns them cannot
      * accidentally post against the funding account, and cannot drift out of step when an account
      * is replaced. Resolution happens here, against the same idempotent provisioning path
      * registration uses, so a recipient whose wallet was never created can still be paid.
@@ -137,7 +137,7 @@ public final class WalletDtos {
      * <p>The two balance fields are reported per side of the request rather than as a map keyed by
      * account, so the caller still never needs to know an account id. They are null on the
      * reconciliation lookup, which is given only a reference and so has no notion of "from" and
-     * "to" — that caller is asking whether the posting exists, not what it produced.
+     * "to"; that caller is asking whether the posting exists, not what it produced.
      */
     public record PostingResponse(UUID journalEntryId,
                                   String externalRef,

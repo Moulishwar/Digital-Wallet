@@ -87,8 +87,8 @@ public class AuthController {
      * access token has expired, so requiring a valid one would make the endpoint unusable exactly
      * when it is needed. The refresh token is itself the credential.
      *
-     * <p>The token is read from the body, or — when the request carries
-     * {@code X-Token-Transport: cookie} — from the refresh cookie.
+     * <p>The token is read from the body or, when the request carries
+     * {@code X-Token-Transport: cookie}, from the refresh cookie.
      */
     @PostMapping("/refresh")
     @Operation(summary = "Rotate a refresh token and get a new access token")
@@ -107,7 +107,7 @@ public class AuthController {
      * to invalidate their session. Possession of the refresh token is the authorisation, and
      * revoking a token you already hold gains an attacker nothing.
      *
-     * <p>Returns 204 whether or not the token existed — confirming which tokens are real would let
+     * <p>Returns 204 whether or not the token existed: confirming which tokens are real would let
      * a caller probe them. A cookie-mode logout also deletes the cookie.
      */
     @PostMapping("/logout")
@@ -126,7 +126,7 @@ public class AuthController {
 
     /**
      * A token in the body wins. The cookie is consulted only on requests that opted in with the
-     * transport header — never on its own, since the browser attaches it to any request to this
+     * transport header, never on its own, since the browser attaches it to any request to this
      * path, including ones another site triggers.
      */
     private Optional<String> presentedToken(String fromBody, HttpServletRequest http) {

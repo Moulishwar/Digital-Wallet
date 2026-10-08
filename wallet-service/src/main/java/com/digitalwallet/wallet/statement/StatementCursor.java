@@ -14,7 +14,7 @@ import java.util.UUID;
  * the paging key opaque, so clients treat it as a token to hand back rather than something to
  * construct themselves. That leaves the ordering key free to change later without breaking them.
  *
- * <p>It is encoding, not encryption — it hides nothing sensitive, since a caller can only ever
+ * <p>It is encoding, not encryption: it hides nothing sensitive, since a caller can only ever
  * page through their own statement, and ownership is checked separately on every request.
  */
 public record StatementCursor(Instant createdAt, UUID lineId) {

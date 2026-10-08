@@ -45,8 +45,8 @@ public class UserService {
         String normalizedHandle = AppUser.normalizeHandle(handle);
         String normalizedEmail = AppUser.normalizeEmail(email);
 
-        // Handles are checked explicitly because they are a public identifier — you send money to
-        // one, and there is a lookup endpoint for them — so "that handle is taken" reveals nothing
+        // Handles are checked explicitly because they are a public identifier (you send money to
+        // one, and there is a lookup endpoint for them), so "that handle is taken" reveals nothing
         // a determined caller could not already discover, and vague failures here are hostile UX.
         if (userRepository.existsByHandle(normalizedHandle)) {
             throw new ApiException(ErrorCode.VALIDATION_FAILED, "That handle is already taken");
@@ -80,10 +80,10 @@ public class UserService {
     /**
      * Verifies credentials.
      *
-     * <p>Every failure — unknown address, wrong password, suspended account — returns the same
+     * <p>Every failure (unknown address, wrong password, suspended account) returns the same
      * message. Distinguishing them would tell an attacker which addresses are worth attacking.
      *
-     * <p>A successful login is also where configured administrators are promoted — see
+     * <p>A successful login is also where configured administrators are promoted; see
      * {@link AdminProperties}. Doing it here rather than at registration means an address can be
      * added to the list after the account already exists.
      */

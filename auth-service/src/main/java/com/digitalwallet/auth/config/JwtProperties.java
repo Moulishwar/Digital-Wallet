@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * Token settings, bound from {@code security.jwt.*}.
  *
- * @param accessTokenTtl    short by design — a stolen access token stops working quickly, and it
+ * @param accessTokenTtl    short by design: a stolen access token stops working quickly, and it
  *                          cannot be revoked once issued because verification is offline
  * @param refreshTokenTtl   longer, but revocable: refresh tokens are stored, so they can be killed
  * @param privateKey        PEM-encoded PKCS#8 RSA private key, from the environment

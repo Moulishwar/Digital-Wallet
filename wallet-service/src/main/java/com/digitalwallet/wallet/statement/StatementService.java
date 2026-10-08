@@ -38,7 +38,7 @@ public class StatementService {
         Account wallet = walletService.requireWalletFor(ownerUserId);
         int size = Math.clamp(requestedSize, 1, MAX_PAGE_SIZE);
 
-        // Ask for one more row than requested. If it comes back, there is another page — which
+        // Ask for one more row than requested. If it comes back, there is another page, which
         // avoids a second COUNT query purely to answer "is there more?".
         Pageable limit = PageRequest.ofSize(size + 1);
 

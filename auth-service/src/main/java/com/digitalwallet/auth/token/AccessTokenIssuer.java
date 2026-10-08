@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
  * Mints short-lived RS256 access tokens.
  *
  * <p>The claims are deliberately minimal: who the caller is, what they may do, and when the token
- * stops being valid. Nothing sensitive goes in — a JWT is signed, not encrypted, so anyone holding
+ * stops being valid. Nothing sensitive goes in: a JWT is signed, not encrypted, so anyone holding
  * one can read every claim in it. Email addresses and names stay out for that reason.
  */
 @Service

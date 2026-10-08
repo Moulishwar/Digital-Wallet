@@ -9,7 +9,7 @@ export interface PreviewLine {
 }
 
 /**
- * The journal entry a payment will write, shown before it is confirmed — the double entry at the
+ * The journal entry a payment will write, shown before it is confirmed: the double entry at the
  * moment it matters, rather than only afterwards in a history screen.
  */
 export function JournalPreview({ lines, posted }: { lines: PreviewLine[]; posted: boolean }) {

@@ -14,7 +14,7 @@ import java.util.UUID;
  * Wire types for the auth API.
  *
  * <p>No response type here carries {@code passwordHash} or a token hash. That is not an oversight
- * to be careful about — the fields simply do not exist on these records, so there is no code path
+ * to be careful about: the fields simply do not exist on these records, so there is no code path
  * that could serialize them.
  */
 public final class AuthDtos {
@@ -105,7 +105,7 @@ public final class AuthDtos {
     /**
      * What one user may see about another.
      *
-     * <p>Handle and display name only — enough to confirm you are sending money to the right
+     * <p>Handle and display name only: enough to confirm you are sending money to the right
      * person, and no email address, which would turn the lookup into an address harvester.
      */
     public record UserLookupResponse(UUID userId, String handle, String fullName) {

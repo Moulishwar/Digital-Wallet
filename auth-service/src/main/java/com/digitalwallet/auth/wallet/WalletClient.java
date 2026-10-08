@@ -15,7 +15,7 @@ import org.springframework.web.client.RestClient;
  * Calls wallet-service to provision a wallet when a user registers.
  *
  * <p>Failures here are logged and swallowed on purpose. A signup should not fail because a
- * downstream service is restarting — the user's account is real either way, and wallet-service
+ * downstream service is restarting: the user's account is real either way, and wallet-service
  * creates the wallet on first access if it is missing. Making registration depend on wallet-service
  * being up would couple the two services far more tightly than the design intends.
  */

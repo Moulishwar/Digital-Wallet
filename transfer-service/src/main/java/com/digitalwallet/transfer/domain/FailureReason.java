@@ -42,8 +42,8 @@ public enum FailureReason {
      * transfer is <em>terminal</em>: it can never be retried or settled afterwards. So it may only
      * be done on an error we actually understand to mean "this will never succeed as sent".
      *
-     * <p>A 404 from a mistyped route, a 401 from an expired service credential, a 405 from a proxy
-     * — none of those are refusals of the payment, but all of them are 4xx. Reading them as
+     * <p>A 404 from a mistyped route, a 401 from an expired service credential, a 405 from a proxy:
+     * none of those are refusals of the payment, but all of them are 4xx. Reading them as
      * rejections would permanently kill transfers over an infrastructure mistake, and the sender
      * would be told their payment failed when nothing about their payment was wrong. Anything not
      * on this list is treated as an unknown outcome instead, and left for reconciliation to

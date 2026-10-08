@@ -28,7 +28,7 @@ public interface TransferRepository extends JpaRepository<Transfer, UUID> {
     /**
      * The page following the row identified by the cursor.
      *
-     * <p>{@code createdAt} alone is not unique — two transfers can be opened in the same instant —
+     * <p>{@code createdAt} alone is not unique (two transfers can be opened in the same instant),
      * so the id is the tiebreaker that makes the ordering total.
      */
     @Query("""
@@ -44,7 +44,7 @@ public interface TransferRepository extends JpaRepository<Transfer, UUID> {
                                          Pageable pageable);
 
     /**
-     * Transfers whose outcome is still unknown, oldest first — the reconciliation sweep's input.
+     * Transfers whose outcome is still unknown, oldest first: the reconciliation sweep's input.
      *
      * <p>The age floor matters. A transfer marked unresolved a moment ago may still have its
      * original request in flight, and sweeping it immediately would race that request rather than

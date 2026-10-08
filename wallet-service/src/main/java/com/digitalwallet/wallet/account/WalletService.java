@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Wallet-level operations: provisioning, balance, and top-up.
  *
- * <p>Note what is <em>not</em> here — no arithmetic on balances. Anything that changes an amount
+ * <p>Note what is <em>not</em> here: no arithmetic on balances. Anything that changes an amount
  * goes through {@link LedgerPostingService} so the double-entry rule cannot be sidestepped.
  */
 @Service
@@ -39,7 +39,7 @@ public class WalletService {
      * Returns the user's wallet, creating it if this is the first time we have seen them.
      *
      * <p>Intentionally not annotated {@code @Transactional}. Each repository call runs in its own
-     * transaction, which is what allows the race below to be caught and recovered from — a caught
+     * transaction, which is what allows the race below to be caught and recovered from; a caught
      * exception inside an outer transaction would leave it marked rollback-only and unusable.
      *
      * <p>The race is real: two requests for a brand-new user can both find nothing and both try to
@@ -76,7 +76,7 @@ public class WalletService {
     }
 
     /**
-     * Credits the wallet from the system funding account — a simulated deposit.
+     * Credits the wallet from the system funding account: a simulated deposit.
      *
      * <p>Not {@code @Transactional}, for the same reason as {@link #provisionWallet}: the posting
      * runs in its own transaction, and if a concurrent request with the same idempotency key
@@ -100,7 +100,7 @@ public class WalletService {
 
         Long balanceAfter = result.balancesAfter().get(wallet.getId());
         if (balanceAfter == null) {
-            // Would mean the entry exists but does not touch this wallet — only reachable if two
+            // Would mean the entry exists but does not touch this wallet, only reachable if two
             // different users somehow produced the same external reference, which the namespacing
             // in topUpReference prevents.
             throw new ApiException(ErrorCode.IDEMPOTENCY_CONFLICT,

@@ -27,7 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * The HTTP contract: authentication, authorization, status codes, validation and error shape.
  *
  * <p>Tokens here are constructed by Spring Security Test rather than fetched from auth-service.
- * That keeps these tests about wallet-service's own behaviour — whether a real token verifies
+ * That keeps these tests about wallet-service's own behaviour. Whether a real token verifies
  * against a real JWKS is auth-service's concern, and it is covered by driving both services
  * together rather than by coupling this suite to another running process.
  */
@@ -353,7 +353,7 @@ class WalletApiIT extends AbstractPostgresIntegrationTest {
                 .andExpect(jsonPath("$.lines[1].counterpartyHandle", nullValue()))
                 .andExpect(jsonPath("$.lines[1].memo", nullValue()));
 
-        // Bob's line is the credit, so the other party is Alice — and he sees her note.
+        // Bob's line is the credit, so the other party is Alice, and he sees her note.
         mockMvc.perform(get("/api/wallets/me/statement").with(userToken(bob)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.lines[0].amountMinor").value(5000))

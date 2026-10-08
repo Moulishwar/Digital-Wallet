@@ -1,12 +1,12 @@
 -- =============================================================================================
---  Digital Wallet — seed data, Oracle dialect
+--  Digital Wallet: seed data, Oracle dialect
 -- =============================================================================================
 --
 --  20 users, one wallet each, one top-up each, and 300 transfers spread over roughly seven months.
 --  Enough volume and enough spread that the window functions in 03_reports.sql produce output
 --  worth reading rather than a handful of rows that prove nothing.
 --
---  Everything here is DETERMINISTIC — fixed ids, fixed dates, fixed amounts, no DBMS_RANDOM. That
+--  Everything here is DETERMINISTIC: fixed ids, fixed dates, fixed amounts, no DBMS_RANDOM. That
 --  is the whole point: the expected results committed alongside 03_reports.sql are only meaningful
 --  if the same script produces the same data every time, on any machine.
 --
@@ -16,7 +16,7 @@
 --
 --  Note that the seed respects the ledger's rules rather than working around them. Every movement
 --  writes a balanced pair of lines, balance_after_minor is maintained as it goes, and the cached
---  account balance is written from the same arithmetic — so query 4 (reconciliation) and query 5
+--  account balance is written from the same arithmetic, so query 4 (reconciliation) and query 5
 --  (zero-sum) are genuine checks here, not tautologies.
 -- =============================================================================================
 
@@ -111,7 +111,7 @@ BEGIN
     -- ---------------------------------------------------------------- transfers
     --
     -- Sender, recipient and amount are all derived from the loop counter using co-prime strides,
-    -- so the traffic is uneven — some users send far more than others — without being random.
+    -- so the traffic is uneven (some users send far more than others) without being random.
     -- Even traffic would make the RANK() queries below meaningless.
     FOR n IN 1 .. c_transfers
         LOOP

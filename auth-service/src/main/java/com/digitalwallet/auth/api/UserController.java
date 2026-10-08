@@ -40,8 +40,8 @@ public class UserController {
      * Resolves a handle so a sender can confirm who they are about to pay.
      *
      * <p>Authenticated, and returns only handle and display name. It is still an oracle for "does
-     * this handle exist", which is unavoidable — you cannot send money to someone without being
-     * able to find them — but it deliberately exposes nothing that would help contact or target
+     * this handle exist", which is unavoidable (you cannot send money to someone without being
+     * able to find them), but it deliberately exposes nothing that would help contact or target
      * them elsewhere.
      */
     @GetMapping("/lookup")

@@ -37,7 +37,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
  * What the gateway does with a request before any service sees it.
  *
  * <p>Tokens here are real: signed with a throwaway RSA key that the stubbed JWKS endpoint publishes,
- * so the resource-server path is genuinely exercised — signature, expiry and issuer all verified
+ * so the resource-server path is genuinely exercised: signature, expiry and issuer all verified
  * against a key set fetched over HTTP. Faking the authentication would have skipped the one thing
  * this milestone adds.
  */
@@ -212,7 +212,7 @@ class GatewayRoutingIT {
     void wrongIssuerIsRejected() {
         WALLET.stubFor(get(urlPathEqualTo("/api/wallets/me")).willReturn(okJson("{}")));
 
-        // Signed with the right key, so the signature verifies — but minted by something else.
+        // Signed with the right key, so the signature verifies, but minted by something else.
         // Without the issuer check this would sail through.
         String foreign = tokenFor(UUID.randomUUID(), "https://someone-else.example/auth",
                 Instant.now().plusSeconds(900));

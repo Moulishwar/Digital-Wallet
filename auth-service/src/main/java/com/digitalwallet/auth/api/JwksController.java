@@ -30,7 +30,7 @@ public class JwksController {
     public Map<String, Object> jwks() {
         // toPublicJWK() strips the private exponent and CRT parameters. Serializing the full key
         // here would hand out the ability to mint tokens, so this call is the entire security
-        // boundary of this endpoint — there is a test asserting the response has no "d" member.
+        // boundary of this endpoint, and there is a test asserting the response has no "d" member.
         return new JWKSet(signingKey.toPublicJWK()).toJSONObject();
     }
 }

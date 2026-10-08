@@ -71,7 +71,7 @@ export function Profile() {
 
 /**
  * A QR code for being paid. It encodes an ordinary link to the send screen with the handle filled
- * in, so a phone's own camera app opens it — no scanner inside this app is needed.
+ * in, so a phone's own camera app opens it, and no scanner inside this app is needed.
  */
 function ReceiveCard({ handle }: { handle: string }) {
   const link = `${window.location.origin}/send?to=${encodeURIComponent(handle)}`;

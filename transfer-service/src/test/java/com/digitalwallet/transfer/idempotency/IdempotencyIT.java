@@ -30,7 +30,7 @@ import org.springframework.test.web.servlet.MockMvc;
  *
  * <p>The concurrent case is the one that matters. A client whose request times out will fire the
  * same key again while the first is very possibly still running, so "check whether the key exists,
- * then insert it" is not good enough — two requests can both pass the check. What saves it is the
+ * then insert it" is not good enough: two requests can both pass the check. What saves it is the
  * unique constraint on {@code (idempotency_key, user_id)}: the database picks a winner, and the
  * loser adopts the winner's answer instead of doing the work again.
  */
@@ -75,7 +75,7 @@ class IdempotencyIT extends AbstractTransferIntegrationTest {
         // Field for field, including the transfer id and both timestamps: the retry receives the
         // original answer, not a fresh one that merely resembles it. Compared as JSON rather than
         // as text because the response is stored in a jsonb column, and PostgreSQL reorders jsonb
-        // keys — a difference no correct client can observe.
+        // keys, a difference no correct client can observe.
         assertSameJson(first, second);
         assertTransferCount(1);
         WIREMOCK.verify(1, postRequestedFor(urlPathEqualTo("/internal/postings")));
@@ -225,7 +225,7 @@ class IdempotencyIT extends AbstractTransferIntegrationTest {
     /**
      * Asserts two responses carry exactly the same fields and values.
      *
-     * <p>Strict comparison — no extra or missing fields are tolerated — but insensitive to key
+     * <p>Strict comparison (no extra or missing fields are tolerated) but insensitive to key
      * order, which JSON does not define as meaningful and which PostgreSQL's jsonb normalisation
      * changes on the way through storage.
      */

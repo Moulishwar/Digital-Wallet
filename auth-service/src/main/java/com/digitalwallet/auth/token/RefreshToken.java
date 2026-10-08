@@ -12,7 +12,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * A stored refresh token — or rather, the hash of one.
+ * A stored refresh token, or rather, the hash of one.
  *
  * <p>The raw token is a 256-bit random string that exists only in the response that issued it. Only
  * its SHA-256 is kept here, for the same reason passwords are hashed: whoever reads this table

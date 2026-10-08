@@ -26,7 +26,7 @@ import reactor.core.publisher.Mono;
  *
  * <p>Two things make this more than a counter. First, it is keyed by <b>token subject</b> when the
  * caller is authenticated, so one user cannot exhaust everyone's allowance by sharing an IP with
- * them — behind a corporate NAT or a mobile carrier, an IP is thousands of people. Second, it falls
+ * them: behind a corporate NAT or a mobile carrier, an IP is thousands of people. Second, it falls
  * back to the client address on the public routes, because a request to {@code /api/auth/login} has
  * no user yet, and that is exactly the endpoint worth protecting from someone working through a
  * list of passwords.
@@ -66,7 +66,7 @@ public class RateLimitWebFilter implements WebFilter {
                 .map(context -> context.getAuthentication())
                 .filter(Authentication::isAuthenticated)
                 .map(this::subjectKey)
-                // No authenticated caller — a public route, or a request that never presented a
+                // No authenticated caller: a public route, or a request that never presented a
                 // token. Fall back to where it came from.
                 .defaultIfEmpty("")
                 .flatMap(subject -> subject.isEmpty()

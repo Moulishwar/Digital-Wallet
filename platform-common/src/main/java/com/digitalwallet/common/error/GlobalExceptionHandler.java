@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * Turns exceptions into RFC 7807 Problem Details so every service fails in the same shape.
  *
  * <p>Two rules hold throughout. First, nothing derived from an unexpected exception reaches the
- * client — the stack trace is logged, and the caller gets a fixed message. Leaking a message like
+ * client: the stack trace is logged, and the caller gets a fixed message. Leaking a message like
  * "duplicate key value violates unique constraint app_user_email_key" confirms that an email is
  * registered, which is an account-enumeration vector. Second, every response carries the trace id
  * so a user-reported failure can be found in the logs without guessing.
@@ -59,8 +59,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpected(Exception ex, HttpServletRequest request) {
-        // Spring's own web exceptions — a missing required header, an unparseable body, a bad path
-        // variable type — already carry the right status. Without this branch the catch-all below
+        // Spring's own web exceptions (a missing required header, an unparseable body, a bad path
+        // variable type) already carry the right status. Without this branch the catch-all below
         // would turn every one of them into a 500, which would be both wrong and confusing to
         // anyone calling the API.
         if (ex instanceof ErrorResponse errorResponse) {

@@ -47,12 +47,12 @@ public class UserDirectoryClient {
     }
 
     /**
-     * @param handle already canonical — trimmed, lowercased, no leading {@code @}. auth-service
+     * @param handle already canonical: trimmed, lowercased, no leading {@code @}. auth-service
      *               folds case but does not strip the {@code @}, so passing it through raw makes
      *               {@code @alice} look like a different, nonexistent user.
      * @return empty when the handle definitively does not exist
      * @throws ApiException if auth-service cannot be reached. An unreachable directory must not be
-     *                      reported as "no such user" — that would tell a sender their recipient
+     *                      reported as "no such user"; that would tell a sender their recipient
      *                      does not exist because of an outage on our side.
      */
     public Optional<Party> findByHandle(String handle, String bearerToken) {

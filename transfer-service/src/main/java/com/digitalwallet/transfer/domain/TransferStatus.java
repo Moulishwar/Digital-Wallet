@@ -7,7 +7,7 @@ import java.util.Set;
  * Where a transfer has got to.
  *
  * <p>The interesting one is {@link #NEEDS_RECONCILIATION}. It exists because a call to
- * wallet-service can fail in a way that does not say whether the money moved — a timeout, a dropped
+ * wallet-service can fail in a way that does not say whether the money moved: a timeout, a dropped
  * connection, a 502 from something in between. Guessing in that moment is how you either lose a
  * payment or make it twice, so the transfer records that the answer is not yet known and the
  * reconciliation sweep goes and finds out.
@@ -35,8 +35,8 @@ public enum TransferStatus {
     /**
      * Whether this status may move to {@code next}.
      *
-     * <p>Terminal means terminal: once a transfer has completed or failed, nothing — not a retry,
-     * not a late reconciliation sweep finding a stale row — may move it again. A COMPLETED transfer
+     * <p>Terminal means terminal: once a transfer has completed or failed, nothing (not a retry,
+     * not a late reconciliation sweep finding a stale row) may move it again. A COMPLETED transfer
      * that could be reopened is a transfer that could be paid twice.
      */
     public boolean canTransitionTo(TransferStatus next) {

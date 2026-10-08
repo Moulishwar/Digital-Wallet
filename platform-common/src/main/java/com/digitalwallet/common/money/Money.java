@@ -13,7 +13,7 @@ import java.math.RoundingMode;
  *
  * <p>Amounts are <strong>signed</strong>: a ledger line carries a negative amount for a debit and
  * a positive amount for a credit, and the lines of a journal entry must sum to zero. Where a value
- * must not be negative — a top-up, a transfer amount — construct it with {@link #positive(long)},
+ * must not be negative (a top-up, a transfer amount), construct it with {@link #positive(long)},
  * which rejects zero and negatives at the boundary rather than deep in the domain.
  *
  * <p>Arithmetic uses {@link Math#addExact} and friends, so an overflow throws rather than silently
@@ -23,13 +23,13 @@ public record Money(long minor) implements Comparable<Money> {
 
     public static final Money ZERO = new Money(0L);
 
-    /** Any amount, including zero and negatives — the general case for a ledger line. */
+    /** Any amount, including zero and negatives: the general case for a ledger line. */
     public static Money ofMinor(long minor) {
         return new Money(minor);
     }
 
     /**
-     * A strictly positive amount. Use this for anything a user supplies as "how much" — it turns
+     * A strictly positive amount. Use this for anything a user supplies as "how much"; it turns
      * a nonsensical request into a clear failure at the edge of the system.
      *
      * @throws IllegalArgumentException if {@code minor} is zero or negative
@@ -57,7 +57,7 @@ public record Money(long minor) implements Comparable<Money> {
         return new Money(Math.subtractExact(this.minor, other.minor));
     }
 
-    /** Flips the sign — turns a credit into the matching debit. */
+    /** Flips the sign, turning a credit into the matching debit. */
     public Money negated() {
         return new Money(Math.negateExact(this.minor));
     }

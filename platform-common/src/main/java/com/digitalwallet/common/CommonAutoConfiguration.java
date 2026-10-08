@@ -11,8 +11,8 @@ import org.springframework.web.servlet.DispatcherServlet;
  * Registers the shared beans so services get them by depending on this module, rather than each
  * one having to remember a component-scan path or an {@code @Import}.
  *
- * <p>Wired through {@code META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports}
- * — the same mechanism Spring Boot's own starters use. {@code @ConditionalOnMissingBean} means a
+ * <p>Wired through {@code META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports},
+ * the same mechanism Spring Boot's own starters use. {@code @ConditionalOnMissingBean} means a
  * service can still override the handler with its own if it ever needs to.
  */
 @AutoConfiguration

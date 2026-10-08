@@ -25,8 +25,8 @@ import org.springframework.web.client.RestClient;
  *
  * <p>The whole job of this class is classification: turning an HTTP result into one of the three
  * {@link PostingOutcome} cases. The temptation to collapse "it failed" and "I do not know whether it
- * failed" into one branch is exactly what this exists to resist — that conflation is how a system
- * either loses a payment or makes it twice.
+ * failed" into one branch is exactly what this exists to resist, because that conflation is how a
+ * system either loses a payment or makes it twice.
  *
  * <p>The request names users, not accounts. Wallet account ids are wallet-service's private
  * business, and this service never sees one.
@@ -48,7 +48,7 @@ public class WalletPostingClient {
 
         // Explicit timeouts. The defaults are effectively infinite, so a wedged wallet-service
         // would hold request threads open until the pool is exhausted and this service stopped
-        // answering too — one service's bad day becoming two.
+        // answering too: one service's bad day becoming two.
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(connectTimeout);
         requestFactory.setReadTimeout(readTimeout);
@@ -57,7 +57,7 @@ public class WalletPostingClient {
                 .baseUrl(baseUrl)
                 .requestFactory(requestFactory)
                 // Set once on the client, so no future call can be added that forgets it. Note this
-                // is the service's own credential, distinct from the caller's bearer token — the
+                // is the service's own credential, distinct from the caller's bearer token: the
                 // ledger does not act on a user's authority, it acts on this service's.
                 .defaultHeader(ServiceCredential.HEADER, serviceCredential)
                 .build();
@@ -71,7 +71,7 @@ public class WalletPostingClient {
      * what makes a later retry of this exact call incapable of moving the money twice.
      *
      * <p>Everything is built from the stored transfer rather than from the live request, so a
-     * retry from the reconciliation sweep sends exactly what the first attempt did — statement
+     * retry from the reconciliation sweep sends exactly what the first attempt did, statement
      * labels included.
      */
     public PostingOutcome post(Transfer transfer) {
@@ -124,7 +124,7 @@ public class WalletPostingClient {
     }
 
     /**
-     * Asks whether a posting with this reference exists — the question the reconciliation sweep
+     * Asks whether a posting with this reference exists: the question the reconciliation sweep
      * needs answered after an unknown outcome.
      *
      * @return empty when wallet-service is certain there is no such posting, so retrying is safe.
@@ -166,7 +166,7 @@ public class WalletPostingClient {
      * Classifies a 4xx.
      *
      * <p>Only an error this service actually recognises becomes a rejection, because a rejection is
-     * terminal — the transfer can never settle afterwards. An unfamiliar 4xx is far more likely to
+     * terminal: the transfer can never settle afterwards. An unfamiliar 4xx is far more likely to
      * be an infrastructure problem (a stale route, a rejected credential, a proxy answering for a
      * service that is not there) than a refusal of the payment, and permanently failing someone's
      * transfer over one would tell them their payment was refused when it was never seen.

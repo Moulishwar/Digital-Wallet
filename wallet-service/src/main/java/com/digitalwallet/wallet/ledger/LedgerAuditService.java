@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Checks the ledger's own invariants on demand.
  *
- * <p>Both checks below should be boring — they exist so that "the balances are correct" is
+ * <p>Both checks below should be boring; they exist so that "the balances are correct" is
  * something that can be demonstrated rather than asserted. The same queries back the integration
  * tests, so a regression in the posting path fails the build as well as this endpoint.
  */
@@ -28,8 +28,8 @@ public class LedgerAuditService {
     /**
      * The signed total of every ledger line in the system.
      *
-     * <p>Must be zero. Each entry is internally balanced, so the sum of all of them is too — value
-     * only ever moves between accounts.
+     * <p>Must be zero. Each entry is internally balanced, so the sum of all of them is too, since
+     * value only ever moves between accounts.
      */
     @Transactional(readOnly = true)
     public long totalOfAllLines() {
