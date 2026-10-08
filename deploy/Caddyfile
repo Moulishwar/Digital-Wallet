@@ -1,0 +1,30 @@
+# The front door: HTTPS for SITE_ADDRESS, with a certificate from Let's Encrypt that Caddy
+# obtains and renews by itself, in front of the web container.
+
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	# Caddy passes the visitor's address on in X-Forwarded-For, which nginx in the web container
+	# believes from this network only. That is what keys the API's rate limit per visitor.
+	reverse_proxy web:80
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+
+	# While a new version is starting or the stack is restarting, say so rather than show a bare 502.
+	handle_errors 502 503 504 {
+		header Content-Type "text/html; charset=utf-8"
+		header Retry-After "60"
+		respond `<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Back in a minute</title>
+<body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#7a181b;color:#f4ebd9;font:1.1rem/1.5 Georgia,serif;text-align:center;padding:1.5rem">
+<p>The book is being updated.<br>It will open again in a minute.</p>
+</body>
+</html>` 503
+	}
+}

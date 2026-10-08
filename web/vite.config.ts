@@ -1,5 +1,6 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react';
+import { readFileSync } from 'node:fs';
 import { defineConfig, type Plugin } from 'vite';
 import { APP_NAME } from './src/config.ts';
 
@@ -41,10 +42,29 @@ function manifest(): Plugin {
   };
 }
 
+/** `DEMO_MODE=true npm run dev` serves the demo accounts, as the web container does in demo mode. */
+function demo(): Plugin {
+  return {
+    name: 'demo',
+    configureServer(server) {
+      server.middlewares.use('/demo.json', (_request, response) => {
+        if (process.env.DEMO_MODE !== 'true') {
+          response.statusCode = 404;
+          response.end();
+          return;
+        }
+        response.setHeader('Content-Type', 'application/json');
+        response.end(readFileSync(new URL('./demo/demo.json', import.meta.url)));
+      });
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
     react(),
     manifest(),
+    demo(),
     {
       // The page title comes from the same constant as everything else, so renaming the app
       // never means hunting through HTML.

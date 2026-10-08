@@ -35,7 +35,7 @@ public class OpenApiConfig {
                                 """)
                         .license(new License().name("Apache-2.0").url("https://www.apache.org/licenses/LICENSE-2.0")))
                 // Relative, so "Try it out" calls whichever origin served the docs: the gateway's
-                // /api/docs, this service directly, or the live demo, with no host configured.
+                // /api/docs, this service directly, or a deployment behind a proxy.
                 .servers(List.of(new Server().url("/")))
                 .components(new Components().addSecuritySchemes("bearerAuth",
                         new SecurityScheme()

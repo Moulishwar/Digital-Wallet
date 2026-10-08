@@ -1,5 +1,6 @@
 import { request, type APIRequestContext, type FullConfig } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
+import demo from '../demo/demo.json' with { type: 'json' };
 import { auditor, PASSWORD, people, WIDE_NOTE, type Person } from './support/people';
 
 /**
@@ -13,7 +14,20 @@ export default async function globalSetup(config: FullConfig) {
   for (const p of Object.values(people)) {
     await register(api, p);
   }
-  // The auditor outlives a run, so it is registered only the first time.
+  // The demo's shared accounts and the auditor outlive a run, so each is registered only once.
+  for (const account of demo.accounts) {
+    const existing = await api.post('/api/auth/login', {
+      data: { email: account.email, password: account.password },
+    });
+    if (!existing.ok()) {
+      const { handle, fullName, email, password } = account;
+      await ok(
+        await api.post('/api/auth/register', { data: { handle, fullName, email, password } }),
+        `Registering @${handle}`,
+      );
+    }
+  }
+
   const auditorSignIn = await api.post('/api/auth/login', {
     data: { email: auditor.email, password: PASSWORD },
   });

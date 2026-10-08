@@ -1,0 +1,91 @@
+# Running on a server with HTTPS: layered over docker-compose.yml.
+#
+#   deploy/compose.sh up -d --wait          (a wrapper for the command below)
+#   docker compose -f docker-compose.yml -f deploy/compose.prod.yml --profile services up -d --wait
+#
+# What changes from local development:
+# - Images come from the registry (IMAGE_REGISTRY, IMAGE_TAG in .env); nothing is built here.
+# - SITE_ADDRESS in .env is the domain to serve. Its DNS must point at the server, and ports 80
+#   and 443 must be open to it, for the certificate to be issued.
+# - Caddy is the only thing reachable from the internet, on 80 and 443, with a certificate it
+#   obtains and renews itself. The databases and the gateway publish no ports at all.
+# - Every container restarts on failure and on reboot, has a memory ceiling, and keeps its logs
+#   to a bounded size.
+
+x-server: &server
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  walletdb:
+    <<: *server
+    ports: !reset []
+    mem_limit: 384m
+
+  authdb:
+    <<: *server
+    ports: !reset []
+    mem_limit: 384m
+
+  transferdb:
+    <<: *server
+    ports: !reset []
+    mem_limit: 384m
+
+  # The JVM's memory calculator sizes the heap from the container's limit, after the thread
+  # stacks, metaspace and code cache, which together want roughly 600 MB.
+  auth-service:
+    <<: *server
+    mem_limit: 1g
+
+  wallet-service:
+    <<: *server
+    mem_limit: 1g
+
+  transfer-service:
+    <<: *server
+    mem_limit: 1g
+
+  api-gateway:
+    <<: *server
+    ports: !reset []
+    mem_limit: 1g
+    environment:
+      # Reachable only from inside the compose network, where the one caller is nginx. Its
+      # X-Real-IP header names the visitor, so the anonymous rate limit is per visitor.
+      GATEWAY_TRUSTED_PROXIES: 10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+
+  web:
+    <<: *server
+    ports: !reset []
+    mem_limit: 128m
+
+  caddy:
+    <<: *server
+    image: caddy:2-alpine
+    container_name: dw-caddy
+    profiles: [services]
+    depends_on:
+      web:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?SITE_ADDRESS must be set in .env, e.g. wallet.example.com}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # The certificate and its account key. Kept across restarts and upgrades, so the
+      # certificate authority is not asked for a new one each time.
+      - caddy-data:/data
+      - caddy-config:/config
+    mem_limit: 128m
+
+volumes:
+  caddy-data:
+  caddy-config:

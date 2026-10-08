@@ -3,15 +3,21 @@
 #   docker compose -f docker-compose.yml -f web/e2e/compose.e2e.yml --profile services up -d --wait
 #
 # - The tests run over plain http://localhost, where WebKit drops a cookie marked Secure.
-# - The auditor the tests sign in as is promoted alongside any ADMIN_EMAILS already set.
+# - The auditors the tests sign in as are promoted alongside any ADMIN_EMAILS already set.
+# - The web app runs in demo mode, so its demo accounts are tested and every other test proves
+#   demo mode leaves the ordinary wallet working.
 # - Every test signs in afresh from the same address, far faster than any one person would; the
 #   gateway's per-address limit on anonymous calls is raised so it does not refuse the suite.
 services:
   auth-service:
     environment:
       REFRESH_COOKIE_SECURE: 'false'
-      ADMIN_EMAILS: e2e-auditor@example.com,${ADMIN_EMAILS:-}
+      ADMIN_EMAILS: e2e-auditor@example.com,auditor@demo.example.com,${ADMIN_EMAILS:-}
   api-gateway:
     environment:
       GATEWAY_RATELIMIT_ANONYMOUS_CAPACITY: 1000
       GATEWAY_RATELIMIT_ANONYMOUS_REFILLPERSECOND: 100
+  web:
+    environment:
+      DEMO_MODE: 'true'
+      DEMO_RESETS_AT: 03:30 IST

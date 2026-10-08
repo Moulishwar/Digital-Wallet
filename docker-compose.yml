@@ -16,6 +16,11 @@
 #       The whole system, services included, reachable at http://localhost:8080. Images are built
 #       by Cloud Native Buildpacks via the Spring Boot plugin, so there is no Dockerfile to keep in
 #       step with the build.
+#
+# On a server, deploy/compose.prod.yml layers HTTPS and production settings over this file.
+
+# Fixed, so the volume names (digital-wallet_walletdb-data, ...) do not depend on the folder name.
+name: digital-wallet
 
 services:
 
@@ -195,11 +200,28 @@ services:
         condition: service_healthy
     ports:
       - "${WEB_PORT:-3000}:80"
+    environment:
+      # true puts the demo accounts (web/demo/demo.json) on the cover, each opened with one tap.
+      DEMO_MODE: ${DEMO_MODE:-false}
+      # Optional: when something wipes the demo on a schedule, the cover says so, e.g. "03:30 IST".
+      DEMO_RESETS_AT: ${DEMO_RESETS_AT:-}
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
       interval: 10s
       timeout: 5s
       retries: 6
+
+  # Not a server: run once to create the demo accounts and a short history between them, through
+  # the API exactly as a visitor would.
+  #   docker compose run --rm demo-seed
+  demo-seed:
+    image: node:22-alpine
+    profiles: [tools]
+    volumes:
+      - ./web/demo:/demo:ro
+    environment:
+      API_URL: http://api-gateway:8080
+    command: ["node", "/demo/seed.mjs"]
 
 volumes:
   walletdb-data:

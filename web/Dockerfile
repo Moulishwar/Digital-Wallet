@@ -12,4 +12,8 @@ RUN npm run build
 FROM nginx:1.29-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
+# Off unless DEMO_MODE=true; see demo/40-demo-mode.sh.
+ENV DEMO_MODE=false
+COPY demo/demo.json /usr/share/nginx/demo/demo.json
+COPY --chmod=755 demo/40-demo-mode.sh /docker-entrypoint.d/40-demo-mode.sh
 EXPOSE 80

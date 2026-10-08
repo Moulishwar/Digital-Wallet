@@ -1,0 +1,25 @@
+{
+  "accounts": [
+    {
+      "role": "person",
+      "handle": "adhi",
+      "fullName": "Adhi",
+      "email": "adhi@demo.example.com",
+      "password": "adhi-demo-password"
+    },
+    {
+      "role": "person",
+      "handle": "babash",
+      "fullName": "Babash",
+      "email": "babash@demo.example.com",
+      "password": "babash-demo-password"
+    },
+    {
+      "role": "auditor",
+      "handle": "auditor",
+      "fullName": "Auditor",
+      "email": "auditor@demo.example.com",
+      "password": "auditor-demo-password"
+    }
+  ]
+}

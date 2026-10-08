@@ -9,6 +9,7 @@
   --above: 6rem;
   --below: 1.25rem;
 
+  position: relative;
   min-height: 100dvh;
   padding: 3.25rem clamp(1rem, 3vw, 3rem) var(--below);
   background-color: var(--cloth);
@@ -18,6 +19,24 @@
   display: grid;
   grid-template-rows: auto 1fr;
   justify-items: center;
+}
+
+/* Written on the cloth above the left page, where the ribbons leave room. */
+.demoTag {
+  position: absolute;
+  top: 1.15rem;
+  left: clamp(1rem, 3vw, 3rem);
+  margin: 0;
+  font-size: var(--text-xs);
+  letter-spacing: 0.02em;
+  color: var(--cloth-text);
+}
+
+.demoTag strong {
+  color: var(--thread);
+  font-weight: 640;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 /* ------------------------------------------------------------------------------- ribbons */
@@ -130,6 +149,18 @@
   .desk {
     padding: 0 0 calc(4.25rem + env(safe-area-inset-bottom));
     grid-template-rows: 1fr;
+  }
+
+  /* A strip of cloth above the page; the page beneath no longer needs the notch's clearance. */
+  .demoTag {
+    position: static;
+    width: 100%;
+    padding: calc(0.45rem + env(safe-area-inset-top)) 1.25rem 0.45rem;
+    text-align: center;
+  }
+
+  .desk:has(.demoTag) {
+    grid-template-rows: auto 1fr;
   }
 
   .spread,

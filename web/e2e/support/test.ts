@@ -13,7 +13,11 @@ export const test = base.extend<Fixtures>({
   pageErrors: [
     async ({ page }, use) => {
       const errors: string[] = [];
-      page.on('pageerror', (error) => errors.push(String(error)));
+      page.on('pageerror', (error) => {
+        // WebKit reports a request cut short by the test navigating away as failing "due to access
+        // control checks". The app only ever calls its own origin, so that is never a real CORS error.
+        if (!/due to access control checks/.test(String(error))) errors.push(String(error));
+      });
       page.on('console', (message) => {
         if (/Content.Security.Policy/i.test(message.text())) errors.push(message.text());
       });
@@ -31,6 +35,16 @@ export async function signIn(page: Page, person: Person, path = '/') {
   await page.getByLabel('Password').fill(PASSWORD);
   await page.getByRole('button', { name: 'Open my book' }).click();
   await expect(page.getByRole('navigation', { name: 'Sections' })).toBeVisible();
+}
+
+/**
+ * Closes the book from Profile and waits for the cover. Navigating away any sooner would cancel the
+ * sign-out request, leaving the session alive to be restored on the next page load.
+ */
+export async function signOut(page: Page) {
+  await ribbon(page, 'Profile').click();
+  await page.getByRole('button', { name: 'Close my book' }).click();
+  await expect(page.getByRole('button', { name: 'Open my book' })).toBeVisible();
 }
 
 /** One of the cloth ribbons that lead to each section. */

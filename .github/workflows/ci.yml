@@ -141,21 +141,9 @@ jobs:
           ./mvnw -B -DskipTests spring-boot:build-image \
             -pl auth-service,wallet-service,transfer-service,api-gateway
 
-      # A fresh set of secrets for this run alone, made the way the README describes.
+      # A fresh set of secrets for this run alone.
       - name: Write a throwaway environment
-        run: |
-          set -euo pipefail
-          cp .env.example .env
-          put() { sed -i "s|^$1=.*|$1=$2|" .env; }
-          KEYS=$(mktemp -d)
-          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -outform DER -out "$KEYS/priv.der"
-          openssl pkcs8 -topk8 -nocrypt -inform DER -in "$KEYS/priv.der" -outform DER -out "$KEYS/priv_pkcs8.der"
-          openssl rsa -in "$KEYS/priv.der" -inform DER -pubout -outform DER -out "$KEYS/pub.der"
-          put JWT_PRIVATE_KEY "$(base64 -w0 "$KEYS/priv_pkcs8.der")"
-          put JWT_PUBLIC_KEY "$(base64 -w0 "$KEYS/pub.der")"
-          for KEY in WALLET_DB_PASSWORD AUTH_DB_PASSWORD TRANSFER_DB_PASSWORD SERVICE_CREDENTIAL; do
-            put "$KEY" "$(openssl rand -hex 24)"
-          done
+        run: deploy/make-env.sh
 
       - name: Start the stack
         run: docker compose -f docker-compose.yml -f web/e2e/compose.e2e.yml --profile services up -d --build --wait
@@ -198,12 +186,21 @@ jobs:
           retention-days: 14
 
   publish-images:
-    name: Publish images
+    name: Publish images (${{ matrix.arch }})
     # Only from main, and only once every test and the scan have passed. An image that was never
     # proven green is worse than no image, because it looks trustworthy.
     needs: [build, security-scan, web, e2e]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
+    # Published for Intel and ARM servers alike. Each architecture is built natively on its own
+    # runner; emulating ARM on an Intel runner would make the build several times slower.
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
       packages: write
@@ -224,36 +221,62 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Cloud Native Buildpacks via the Spring Boot plugin — there is no Dockerfile in this
-      # repository to drift out of step with the build.
-      #
-      # Tagged twice on purpose: `latest` is convenient, and the commit SHA is what lets you say
-      # precisely which code is running somewhere.
-      - name: Build and publish images
+      # The services by Cloud Native Buildpacks via the Spring Boot plugin (no Dockerfile to drift
+      # out of step with the build); the web app from its two-stage Dockerfile.
+      - name: Build and push this architecture's images
         run: |
           set -euo pipefail
           # GHCR namespaces are lowercase; a repository owner with capitals would otherwise
           # produce an image name the registry rejects.
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          SHA_TAG=$(git rev-parse --short HEAD)
           REGISTRY="ghcr.io/${OWNER}"
+          TAG="${GITHUB_SHA}-${{ matrix.arch }}"
 
           # The services depend on platform-common, which -pl leaves out of the reactor, and this
           # runner's Maven repository is empty. Install it (and the parent pom) first. Not -am on
           # the build below: that would run build-image on platform-common too, which is a library
           # with no main class.
           ./mvnw -B -DskipTests install -pl platform-common -am
-
-          # Built once, locally, tagged with the commit SHA. Tagging `latest` is then a rename of
-          # the same bytes rather than a second build — which is both faster and stronger: the two
-          # tags are guaranteed to be the identical image, not two builds that ought to match.
           ./mvnw -B -DskipTests spring-boot:build-image \
             -pl auth-service,wallet-service,transfer-service,api-gateway \
             -Dimage.registry="${REGISTRY}" \
-            -Dimage.tag="${SHA_TAG}"
+            -Dimage.tag="${TAG}"
 
-          for SERVICE in auth-service wallet-service transfer-service api-gateway; do
-            docker tag "${REGISTRY}/${SERVICE}:${SHA_TAG}" "${REGISTRY}/${SERVICE}:latest"
-            docker push "${REGISTRY}/${SERVICE}:${SHA_TAG}"
-            docker push "${REGISTRY}/${SERVICE}:latest"
+          # Labelled with its source repository, so the registry links it there and it takes the
+          # repository's public visibility.
+          docker build web --tag "${REGISTRY}/web:${TAG}" \
+            --label "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}"
+
+          for IMAGE in auth-service wallet-service transfer-service api-gateway web; do
+            docker push "${REGISTRY}/${IMAGE}:${TAG}"
+          done
+
+  publish-manifests:
+    name: Publish multi-architecture images
+    needs: publish-images
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # One name per image covering both architectures; a server pulls the one that matches it.
+      # Tagged twice on purpose: `latest` is convenient, and the commit SHA is what lets you say
+      # precisely which code is running somewhere.
+      - name: Join the two architectures under one tag
+        run: |
+          set -euo pipefail
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          REGISTRY="ghcr.io/${OWNER}"
+          for IMAGE in auth-service wallet-service transfer-service api-gateway web; do
+            docker buildx imagetools create \
+              --tag "${REGISTRY}/${IMAGE}:${GITHUB_SHA}" \
+              --tag "${REGISTRY}/${IMAGE}:latest" \
+              "${REGISTRY}/${IMAGE}:${GITHUB_SHA}-amd64" \
+              "${REGISTRY}/${IMAGE}:${GITHUB_SHA}-arm64"
           done

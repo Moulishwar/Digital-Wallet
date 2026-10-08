@@ -19,8 +19,8 @@ docker compose -f docker-compose.yml -f web/e2e/compose.e2e.yml --profile servic
 ```
 
 The overrides allow the refresh cookie over plain `http://localhost` (WebKit drops `Secure`
-cookies there), make `e2e-auditor@example.com` an auditor, and raise the gateway's per-address
-limit on anonymous calls, since the whole suite signs in from one address.
+cookies there), make the test and demo auditors auditors, run the app in demo mode, and raise the
+gateway's per-address limit on anonymous calls, since the whole suite signs in from one address.
 
 Then, from `web/`:
 
@@ -44,7 +44,8 @@ docker run --rm --network host --ipc host --user "$(id -u):$(id -g)" -e HOME=/tm
 ## What they cover
 
 - **session**: opening an account, a refused password, staying signed in across a reload with no
-  token readable by script, signing out, the 15-minute idle lock, arriving from a payment link.
+  token readable by script, signing out (and the next person starting at Home), the 15-minute idle
+  lock, arriving from a payment link.
 - **money**: adding test money, paying someone through every step and seeing it arrive on their
   side, the balance limit, the 30-character note, unknown handles, a refused payment.
 - **paging**: turning pages back and forth, reloading, the browser's Back button, and each Ledger
@@ -54,5 +55,6 @@ docker run --rm --network host --ipc host --user "$(id -u):$(id -g)" -e HOME=/tm
   60-letter name, a 30-letter note and a 32-character handle, none with a space to break at.
 - **accessibility**: axe-core finds no WCAG 2.2 AA violation on any screen, light or dark.
 - **admin**: only the auditor sees and can run the ledger health check.
+- **demo**: the one-tap demo accounts, and the demo people offered to a visitor's new account.
 - **platform**: the Content Security Policy, the installable app manifest and service worker,
   and the published API documentation.

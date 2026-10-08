@@ -3,6 +3,7 @@ import { ApiError, api } from '../api/client';
 import { useAuth } from '../auth/context';
 import { Field, FormError } from '../components/Form';
 import { APP_NAME } from '../config';
+import { useDemo, type Demo, type DemoAccount } from '../demo';
 import formStyles from '../components/Form.module.css';
 import styles from './Cover.module.css';
 
@@ -20,6 +21,7 @@ const CLOSED_NOTICE = {
 export function Cover({ checking = false }: { checking?: boolean }) {
   const { closedReason } = useAuth();
   const [mode, setMode] = useState<Mode>('signIn');
+  const demo = useDemo();
 
   return (
     <main className={styles.cover}>
@@ -47,7 +49,10 @@ export function Cover({ checking = false }: { checking?: boolean }) {
             Opening your book…
           </p>
         ) : mode === 'signIn' ? (
-          <SignInForm onSwitch={() => setMode('register')} />
+          <>
+            {demo && <DemoAccounts demo={demo} />}
+            <SignInForm onSwitch={() => setMode('register')} />
+          </>
         ) : (
           <RegisterForm onSwitch={() => setMode('signIn')} />
         )}
@@ -58,6 +63,59 @@ export function Cover({ checking = false }: { checking?: boolean }) {
 
 function failureMessage(failure: unknown): string {
   return failure instanceof ApiError ? failure.message : 'Could not reach the server. Try again.';
+}
+
+/**
+ * The demo's shared accounts, each opened with one tap. Two people, so a visitor can pay one
+ * and then open the other's book to see the money arrive, and an auditor for the ledger health page.
+ */
+function DemoAccounts({ demo }: { demo: Demo }) {
+  const { signIn } = useAuth();
+  const [opening, setOpening] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function open(account: DemoAccount) {
+    setOpening(account.handle);
+    setError(null);
+    try {
+      await signIn(account.email, account.password);
+    } catch (failure) {
+      setError(failureMessage(failure));
+      setOpening(null);
+    }
+  }
+
+  return (
+    <section className={styles.demo} aria-labelledby="demo-title">
+      <h2 id="demo-title" className={styles.demoTitle}>
+        Try the demo
+      </h2>
+      <p className={styles.demoNote}>
+        Open a shared account with one tap: pay one person, then open the other’s book to see it arrive. Test
+        money only{demo.resetsAt ? `, wiped back to the start at ${demo.resetsAt} each night` : ''}.
+      </p>
+      <ul className={styles.demoAccounts}>
+        {demo.accounts.map((account) => (
+          <li key={account.handle} className={account.role === 'auditor' ? styles.demoAuditor : undefined}>
+            <button
+              type="button"
+              className={formStyles.secondary}
+              onClick={() => open(account)}
+              disabled={opening !== null}
+            >
+              {opening === account.handle
+                ? 'Opening…'
+                : account.role === 'auditor'
+                  ? `${account.fullName}: ledger health`
+                  : account.fullName}
+            </button>
+          </li>
+        ))}
+      </ul>
+      {error && <FormError>{error}</FormError>}
+      <p className={styles.demoOr}>or use your own account</p>
+    </section>
+  );
 }
 
 function SignInForm({ onSwitch }: { onSwitch: () => void }) {

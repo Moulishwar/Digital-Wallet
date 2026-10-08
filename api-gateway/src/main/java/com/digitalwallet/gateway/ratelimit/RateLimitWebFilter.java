@@ -2,7 +2,6 @@ package com.digitalwallet.gateway.ratelimit;
 
 import com.digitalwallet.gateway.error.GatewayProblem;
 import tools.jackson.databind.ObjectMapper;
-import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,10 +51,12 @@ public class RateLimitWebFilter implements WebFilter {
 
     private final Map<String, TokenBucket> buckets = new ConcurrentHashMap<>();
     private final RateLimitProperties properties;
+    private final ClientAddress clientAddress;
     private final ObjectMapper objectMapper;
 
     public RateLimitWebFilter(RateLimitProperties properties, ObjectMapper objectMapper) {
         this.properties = properties;
+        this.clientAddress = new ClientAddress(properties.trustedProxies());
         this.objectMapper = objectMapper;
     }
 
@@ -69,7 +70,8 @@ public class RateLimitWebFilter implements WebFilter {
                 // token. Fall back to where it came from.
                 .defaultIfEmpty("")
                 .flatMap(subject -> subject.isEmpty()
-                        ? apply(exchange, chain, "ip:" + clientAddress(exchange), properties.anonymous())
+                        ? apply(exchange, chain, "ip:" + clientAddress.of(exchange.getRequest()),
+                                properties.anonymous())
                         : apply(exchange, chain, "user:" + subject, properties.authenticated()));
     }
 
@@ -98,21 +100,6 @@ public class RateLimitWebFilter implements WebFilter {
             return jwt.getSubject();
         }
         return "";
-    }
-
-    /**
-     * The caller's address.
-     *
-     * <p>Taken from the connection, not from {@code X-Forwarded-For}. That header is client-supplied
-     * unless a proxy you control overwrites it, and trusting it here would let anyone reset their
-     * own limit by inventing a new value per request. A deployment that genuinely sits behind a
-     * trusted proxy should enable Spring's forwarded-header handling rather than parsing it here.
-     */
-    private String clientAddress(ServerWebExchange exchange) {
-        InetSocketAddress remote = exchange.getRequest().getRemoteAddress();
-        return remote == null || remote.getAddress() == null
-                ? "unknown"
-                : remote.getAddress().getHostAddress();
     }
 
     /**

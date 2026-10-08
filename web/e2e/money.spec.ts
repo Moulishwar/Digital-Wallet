@@ -1,5 +1,5 @@
 import { people } from './support/people';
-import { expect, newPerson, ribbon, signIn, test } from './support/test';
+import { expect, newPerson, ribbon, signIn, signOut, test } from './support/test';
 
 test('adds test money and stamps the voucher credited', async ({ page, request }) => {
   const person = await newPerson(request, 'add', 'Farah Ali');
@@ -16,7 +16,7 @@ test('adds test money and stamps the voucher credited', async ({ page, request }
 
 test('pays someone: who, how much, review, paid; and they see it', async ({ page, request }, testInfo) => {
   const payer = await newPerson(request, 'pay', 'Tara Bose', 500_000);
-  const note = `Lunch, ${testInfo.project.name}`;
+  const note = `Lunch, ${testInfo.project.name} ${testInfo.retry}`;
   await signIn(page, payer);
 
   await page.getByRole('link', { name: 'Send money' }).click();
@@ -39,8 +39,7 @@ test('pays someone: who, how much, review, paid; and they see it', async ({ page
   await expect(page.getByRole('button', { name: 'To Ravi Kumar' }).first()).toBeVisible();
   await expect(page.getByText(note)).toBeVisible();
 
-  await ribbon(page, 'Profile').click();
-  await page.getByRole('button', { name: 'Close my book' }).click();
+  await signOut(page);
   await signIn(page, people.ravi, '/activity');
   await expect(page.getByRole('row').filter({ hasText: note })).toContainText('From Tara Bose');
 });

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router';
 import { useMe } from '../api/queries';
+import { useDemo } from '../demo';
 import styles from './Book.module.css';
 
 interface Ribbon {
@@ -37,10 +38,16 @@ export function Book({
   paged?: boolean;
 }) {
   const { data: me } = useMe();
+  const demo = useDemo();
   const ribbons = me?.roles.includes('ROLE_ADMIN') ? [...RIBBONS, ADMIN_RIBBON] : RIBBONS;
 
   return (
     <div className={styles.desk}>
+      {demo && (
+        <p className={styles.demoTag}>
+          <strong>Demo</strong> · test money{demo.resetsAt && ` · resets at ${demo.resetsAt}`}
+        </p>
+      )}
       <nav className={styles.ribbons} aria-label="Sections">
         {ribbons.map((ribbon) => (
           <NavLink

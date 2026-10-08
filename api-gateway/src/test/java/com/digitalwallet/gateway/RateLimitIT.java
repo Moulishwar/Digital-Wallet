@@ -78,6 +78,8 @@ class RateLimitIT {
         registry.add("gateway.rate-limit.authenticated.refill-per-second", () -> 0.001);
         registry.add("gateway.rate-limit.anonymous.capacity", () -> ANONYMOUS_CAPACITY);
         registry.add("gateway.rate-limit.anonymous.refill-per-second", () -> 0.001);
+        // The test client connects from loopback, so loopback plays the reverse proxy.
+        registry.add("gateway.rate-limit.trusted-proxies", () -> "127.0.0.1/32");
     }
 
     @Autowired
@@ -193,5 +195,26 @@ class RateLimitIT {
                 .header("Authorization", "Bearer " + quietUser)
                 .exchange()
                 .expectStatus().isOk();
+    }
+
+    @Test
+    @DisplayName("behind a trusted proxy, each visitor it reports gets their own allowance")
+    void visitorsBehindTheProxyAreLimitedSeparately() {
+        for (int i = 0; i < ANONYMOUS_CAPACITY; i++) {
+            login("203.0.113.10").expectStatus().isOk();
+        }
+        login("203.0.113.10").expectStatus().isEqualTo(429);
+
+        // Another visitor arriving through the same proxy. Keyed by the proxy's own address, this
+        // would be refused for what the first visitor did.
+        login("203.0.113.11").expectStatus().isOk();
+    }
+
+    private WebTestClient.ResponseSpec login(String visitor) {
+        return webTestClient.post().uri("/api/auth/login")
+                .header("X-Real-IP", visitor)
+                .header("Content-Type", "application/json")
+                .bodyValue("{\"email\":\"a@b.c\",\"password\":\"guess\"}")
+                .exchange();
     }
 }

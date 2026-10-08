@@ -1,5 +1,6 @@
 import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { useMe } from '../api/queries';
 import { IDLE_LIMIT_MS, useAuth } from '../auth/context';
 import { Book } from '../components/Book';
@@ -10,6 +11,7 @@ import styles from './Profile.module.css';
 export function Profile() {
   const me = useMe();
   const { signOut } = useAuth();
+  const navigate = useNavigate();
   const [signingOut, setSigningOut] = useState(false);
 
   const left = (
@@ -51,7 +53,8 @@ export function Profile() {
             disabled={signingOut}
             onClick={() => {
               setSigningOut(true);
-              void signOut();
+              // Back to the front of the book, so whoever opens it next starts at Home, not here.
+              void signOut().then(() => navigate('/', { replace: true }));
             }}
           >
             {signingOut ? 'Closing…' : 'Close my book'}

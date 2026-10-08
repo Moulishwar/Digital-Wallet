@@ -8,6 +8,7 @@ import { Book } from '../components/Book';
 import { Field, FormError } from '../components/Form';
 import { JournalPreview } from '../components/JournalPreview';
 import { Voucher } from '../components/Voucher';
+import { useDemo } from '../demo';
 import { parseRupees } from '../lib/amounts';
 import { formatRupees } from '../lib/money';
 import formStyles from '../components/Form.module.css';
@@ -144,6 +145,13 @@ function WhoStep({
 }) {
   const lines = useRecentLines(50);
   const people = recentPeople(lines.data?.lines ?? [], 6);
+  // In the demo, the shared accounts are always there to be paid, even from a brand-new account.
+  const demoPeople = (useDemo()?.accounts ?? []).filter(
+    (account) =>
+      account.role === 'person' &&
+      account.handle !== ownHandle &&
+      !people.some((person) => person.handle === account.handle),
+  );
   const [handle, setHandle] = useState(initialHandle);
   // The handle being looked up. Starts filled when arriving from a QR code or a "pay again" link,
   // so that person is looked up straight away.
@@ -196,28 +204,30 @@ function WhoStep({
         </div>
       </form>
 
-      {people.length > 0 && !found && (
-        <section aria-labelledby="recent-label">
-          <h2 id="recent-label" className={page.sectionLabel}>
-            Recent people
-          </h2>
-          <ul className={`${formStyles.chips} ${page.spaced}`}>
-            {people.map((person) => (
-              <li key={person.handle}>
-                <button
-                  type="button"
-                  className={formStyles.chip}
-                  onClick={() => {
-                    setHandle(person.handle);
-                    setAsked(person.handle);
-                  }}
-                >
-                  {person.name ?? `@${person.handle}`}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
+      {!found && (
+        <>
+          <Suggestions
+            id="recent-label"
+            title="Recent people"
+            people={people.map((person) => ({
+              handle: person.handle,
+              label: person.name ?? `@${person.handle}`,
+            }))}
+            onPick={(picked) => {
+              setHandle(picked);
+              setAsked(picked);
+            }}
+          />
+          <Suggestions
+            id="demo-people-label"
+            title="People in this demo"
+            people={demoPeople.map((account) => ({ handle: account.handle, label: account.fullName }))}
+            onPick={(picked) => {
+              setHandle(picked);
+              setAsked(picked);
+            }}
+          />
+        </>
       )}
 
       {error && <FormError>{error}</FormError>}
@@ -237,6 +247,39 @@ function WhoStep({
         </div>
       )}
     </div>
+  );
+}
+
+/** People to pay with one tap, by name. */
+function Suggestions({
+  id,
+  title,
+  people,
+  onPick,
+}: {
+  id: string;
+  title: string;
+  people: { handle: string; label: string }[];
+  onPick: (handle: string) => void;
+}) {
+  if (people.length === 0) {
+    return null;
+  }
+  return (
+    <section aria-labelledby={id}>
+      <h2 id={id} className={page.sectionLabel}>
+        {title}
+      </h2>
+      <ul className={`${formStyles.chips} ${page.spaced}`}>
+        {people.map((person) => (
+          <li key={person.handle}>
+            <button type="button" className={formStyles.chip} onClick={() => onPick(person.handle)}>
+              {person.label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

@@ -129,6 +129,57 @@
   font-size: var(--text-sm);
 }
 
+.demo {
+  margin-top: 1.5rem;
+}
+
+.demoTitle {
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.demoNote {
+  margin-top: 0.25rem;
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+}
+
+.demoAccounts {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.demoAccounts button {
+  width: 100%;
+  padding: 0 0.75rem;
+}
+
+.demoAuditor {
+  grid-column: 1 / -1;
+}
+
+/* A rule across the plate with the words sitting on it, dividing the demo from signing in. */
+.demoOr {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+.demoOr::before,
+.demoOr::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--rule);
+}
+
 .checking {
   margin-top: 2rem;
   font-style: italic;

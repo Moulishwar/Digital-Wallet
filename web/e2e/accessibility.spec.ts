@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
 import { auditor, people } from './support/people';
 import { screens, settled, voucherScreens } from './support/screens';
-import { expect, newPerson, signIn, test } from './support/test';
+import { expect, newPerson, signIn, signOut, test } from './support/test';
 
 /** WCAG 2.2 at level AA, the standard the UI is built to. */
 async function audit(page: Page) {
@@ -50,8 +50,7 @@ for (const scheme of ['light', 'dark'] as const) {
       await expect(page.getByText('REFUSED', { exact: true })).toBeVisible();
       expect(await audit(page)).toEqual([]);
 
-      await page.goto('/profile');
-      await page.getByRole('button', { name: 'Close my book' }).click();
+      await signOut(page);
       await signIn(page, auditor, '/admin');
       await expect(page.getByText('The ledger is consistent.')).toBeVisible();
       expect(await audit(page)).toEqual([]);

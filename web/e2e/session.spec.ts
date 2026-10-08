@@ -49,6 +49,15 @@ test('closing the book ends the session on the server too', async ({ page, reque
   await expect(page.getByRole('button', { name: 'Open my book' })).toBeVisible();
 });
 
+test('closing the book starts whoever opens it next at Home', async ({ page }) => {
+  await signIn(page, people.asha, '/profile');
+  await page.getByRole('button', { name: 'Close my book' }).click();
+  await expect(page).toHaveURL(/\/$/);
+
+  await signIn(page, people.ravi);
+  await expect(page.getByRole('heading', { name: 'Recent entries' })).toBeVisible();
+});
+
 test('closes itself after 15 minutes without activity', async ({ page, request }) => {
   const person = await newPerson(request, 'idle', 'Usha Pillai');
   await page.clock.install();
